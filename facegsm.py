@@ -96,18 +96,25 @@ def main():
 
     # check_database(database_path)
 
-    modes = ["live", "camera", "manual", "database"]
+    modes = ["live", "camera", "manual", "database", "--help"]
     
     if len(sys.argv) < 2:
         show_error(os.getenv("MODE_NOT_PROVIDED"))
-        sys.exit()
 
     mode = sys.argv[1].lower()
 
     if mode not in modes:
         show_error(os.getenv("MODE_INVALID"))
+    
+    if mode == "--help":
+        print("Usage: python3 facegsm.py live/camera/manual/--help")
+        print("Options:")
+        print("  live: Live camera feature in FaceGSM includes real-time face recognition and attack capabilities.")
+        print("  camera: Camer original and target photos in FaceGSM.")
+        print("  manual: Manual input for FGSM attack in FaceGSM.")
+        print("  --help: Show help for available options.")
         sys.exit()
-
+        
     # if sys.argv[1]:
     #     mode = sys.argv[1].lower()
     #     if mode not in modes:
