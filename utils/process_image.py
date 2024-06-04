@@ -10,14 +10,14 @@ def rect_gen_live(frame, faces, person_name, confidence_level, image_size=(160, 
 
         text = f"{person_name}: {confidence_level}%"
 
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 204), 2)
         cv2.putText(
             frame,
             text,
             (x, y - 10),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.5,
-            (0, 255, 0),
+            (0, 255, 204),
             1,
         )
     return frame
@@ -40,14 +40,14 @@ def rect_gen(person_name, cos_sim, frame, faces, filename):
             )  # frame, text, location, font, font size, color, thickness
             cv2.imwrite(output_path + filename + ".png", frame)
     except:
-        show_error("Error generating rectangle!")
+        show_error("ERROR_RECTANGLE")
 
 
 def save_image(image, filename):
     try:
         cv2.imwrite(output_path + filename + ".png", image)
     except:
-        show_error("Error saving image!")
+        show_error("ERROR_SAVING_IMAGE")
 
 
 def show_image(image, title):
@@ -57,7 +57,7 @@ def show_image(image, title):
         plt.title(title)
         plt.show()
     except:
-        show_error("Error showing image!")
+        show_error("ERROR_SHOWING_IMAGE")
 
 
 def show_save_perturbation_layer(image, title):
@@ -68,7 +68,7 @@ def show_save_perturbation_layer(image, title):
         plt.savefig(output_path + title + ".png")
         plt.show()
     except:
-        show_error("Error showing image!")
+        show_error("ERROR_SHOWING_IMAGE")
 
 
 def create_padding(adv_image, faces):
@@ -86,4 +86,4 @@ def create_padding(adv_image, faces):
         )
         return face_img
     except:
-        show_error("Error creating padding!")
+        show_error("ERROR_CREATING_PADDING")

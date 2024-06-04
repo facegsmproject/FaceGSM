@@ -2,3 +2,7 @@ __pycache__/
 *.old/
 *.old
 *.*.old
+*old*
+server_frame.jpg
+checkpoints/*
+backup*

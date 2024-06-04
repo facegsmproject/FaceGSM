@@ -23,7 +23,7 @@ def create_json(folder_path, model):
             person_name = os.path.splitext(filename)[0]
             predictions_dict[person_name] = predictions
         else:
-            show_error("Invalid file path provided!")
+            show_error("FILE_INVALID")
 
     show_info("Writing JSON database...")
     output = {"predictions": predictions_dict}

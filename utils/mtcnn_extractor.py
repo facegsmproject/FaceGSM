@@ -15,7 +15,7 @@ def extract_face(face, exit=True, required_size=(160, 160)):
         elif type(face) == np.ndarray:
             image = Image.fromarray(face)
         else:
-            show_error("Face is neither a file nor an image array!")
+            show_error("FACE_NEITHER_FILE_NOR_IMAGE_ARRAY")
 
         image = image.convert("RGB")
         pixels = asarray(image)
@@ -32,5 +32,5 @@ def extract_face(face, exit=True, required_size=(160, 160)):
         face_array = asarray(image)
         return face_array, results
     except:
-        show_error("Face not found or error extracting face!", exit=exit)
+        show_error("FACE_NOT_FOUND", exit=exit)
         return None, None

@@ -3,8 +3,10 @@
 # Table of Contents <!-- omit from toc -->
 
 -   [FaceGSM](#facegsm)
+-   [Live Camera Mode - Demo Video](#live-camera-mode---demo-video)
 -   [Installation](#installation)
     -   [Environment Setup and Dependencies Installation](#environment-setup-and-dependencies-installation)
+        -   [Computer Specifications and Software Versions used for Development](#computer-specifications-and-software-versions-used-for-development)
         -   [\*Requirements for Windows Users](#requirements-for-windows-users)
         -   [1. Clone the Repository](#1-clone-the-repository)
         -   [2. Python Environment](#2-python-environment)
@@ -27,9 +29,24 @@
 
 FaceGSM is an open source penetration testing tool that automates the FGSM adversarial attack on the FaceNet model. It comes with three main modes such as manual mode, live mode, and camera mode. Additionally, we have implement some features to improve FaceGSM's efficiency including checkpoints feature and database generator feature.
 
+# Live Camera Mode - Demo Video
+
+[![FaceGSM Live Camera Mode](./demo/thumbnail_live_camera_demo.png)](./demo/LiveCameraDemo.mp4)
+
 # Installation
 
 ## Environment Setup and Dependencies Installation
+
+### Computer Specifications and Software Versions used for Development
+
+FaceGSM is developed using the following computer specifications and software versions:
+
+-   **Operating System**: Windows 11 (64-bit) with WSL2 (Ubuntu 22.04.3 LTS)
+-   **CPU**: Ryzen 5 7500F
+-   **GPU**: NVIDIA GeForce RTX 4060
+-   **Cuda Version**: 12.4
+-   **GPU Driver Version**: 552.22
+-   **Tensorflow Version**: 2.15.0
 
 ### \*Requirements for Windows Users
 

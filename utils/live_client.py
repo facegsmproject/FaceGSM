@@ -20,7 +20,6 @@ face_cascade = cv2.CascadeClassifier(
 
 class LiveCameraClient:
     def __init__(self, target_path, URL_DROIDCAM, model_path):
-        # URL_DROIDCAM = 'http://192.168.1.4:4747/video'
         self.init_droidcam(URL_DROIDCAM)
         self.ret, self.frame = self.vid.read()
 
@@ -45,8 +44,6 @@ class LiveCameraClient:
 
     async def process_frame_to_be_sent(self, frame):
         while True:
-            # if cv2.waitKey(1) & 0xFF == ord("a"):
-            #     break
             frame_bytes = self.frame.tobytes()
             frame_size = len(frame_bytes)
 

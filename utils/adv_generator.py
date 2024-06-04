@@ -1,5 +1,6 @@
 import cv2
 import os
+import time
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -13,7 +14,6 @@ from utils.mtcnn_extractor import *
 from utils.process_image import *
 from utils.checkpoint_delta import *
 
-import time
 
 matplotlib.use("TkAgg")
 
@@ -87,18 +87,11 @@ def attack_adv(original_path, target_path, model, isCheckpoint=False):
     if isCheckpoint:
         delta = load_checkpoint(delta)
 
-    # ========================================================== timer
     start_time = time.perf_counter()
-
     perturbation_layer = adv(model, original_constant, delta, target_embeddings)
-
-    # ========================================================== timer
     end_time = time.perf_counter()
-
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time}: seconds")
-
-    # ========================================================== timer
 
     save_checkpoint(perturbation_layer)
     show_save_perturbation_layer(perturbation_layer, "perturbation_layer")
@@ -143,6 +136,7 @@ def attack_adv(original_path, target_path, model, isCheckpoint=False):
 
 def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
     original_face, original_constant = process_initial_input_image_live(original_input)
+
     if original_face is None:
         return "Unknown", "0.0"
     target_face, _ = process_initial_input_image_live(target_path)
@@ -151,22 +145,15 @@ def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
     delta = tf.Variable(
         tf.zeros_like(original_constant), trainable=True, dtype=tf.float32
     )
-    # check if the checkpoint folder is empty
+
     if os.path.isdir("./checkpoints") and len(os.listdir("./checkpoints")) != 0:
         delta = load_checkpoint(delta)
 
-    # ========================================================== timer
     start_time = time.perf_counter()
-
     perturbation_layer = adv(model, original_constant, delta, target_embeddings)
-
-    # ========================================================== timer
     end_time = time.perf_counter()
-
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time}: seconds")
-
-    # ========================================================== timer
 
     save_checkpoint(perturbation_layer)
 
@@ -177,7 +164,6 @@ def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
         adv_image, model, isAdv=True, exit=False
     )
 
-    # adv_image = cv2.cvtColor(adv_image, cv2.COLOR_RGB2BGR)
     cv2.imwrite("./outputs/adversarial_img_live.jpg", adv_image)
 
     adv_image_preprocessed = preprocess_input_facenet(

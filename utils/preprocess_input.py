@@ -13,16 +13,4 @@ def preprocess_input_facenet(face):
             face = tf.expand_dims(face, axis=0)
         return face
     except:
-        show_error("Error in preprocessing input")
-
-
-# def preprocess_input_facenet_old(face):
-#     try:
-#         face = face.astype("float32")
-#         mean, std = face.mean(), face.std()
-#         face = (face - mean) / std
-#         if len(face.shape) == 3:
-#             face = np.expand_dims(face, axis=0)
-#         return face
-#     except:
-#         show_error("Error in preprocessing input")
+        show_error("ERROR_PREPROCESSING")

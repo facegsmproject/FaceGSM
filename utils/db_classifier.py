@@ -37,5 +37,5 @@ def classify_face(face, model, isAdv=False, exit=True):
             elif i == len(person) - 1 and highest_result == 0:
                 highest_key = "Unknown"
                 highest_result = "0.0"
-                show_error("No match found!", exit=exit)
+                show_error("NO_MATCH_FOUND", exit=exit)
         return highest_key, highest_result, faces
