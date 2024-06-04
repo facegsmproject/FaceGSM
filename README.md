@@ -31,7 +31,7 @@ FaceGSM is an open source penetration testing tool that automates the FGSM adver
 
 # Live Camera Mode - Demo Video
 
-[![FaceGSM Live Camera Mode](./demo/thumbnail_live_camera_demo.png)](https://www.youtube.com/embed/xYrmHXRP7-M?si=Fdxibffj47vqEeGa)
+[![FaceGSM Live Camera Mode](./demo/thumbnail_live_camera_demo.png)](https://drive.google.com/file/d/1uMBreIg1snWARdIuul-TwD2hyB01fIIi/view?usp=sharing)
 
 # Installation
 
