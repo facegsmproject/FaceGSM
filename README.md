@@ -95,6 +95,7 @@ pip install -r requirements.txt
 ```bash
 python3 facegsm.py manual --original original.jpg --target target.jpg --model /path/to/model/model.h5 --checkpoint
 ```
+_* Notes : for all modes, target embeddings vector must already generated and stored in `database.json`_
 
 To get a list of basic features and options use:
 
