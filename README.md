@@ -31,7 +31,7 @@ FaceGSM is an open source penetration testing tool that automates the FGSM adver
 
 # Live Camera Mode - Demo Video
 
-[![FaceGSM Live Camera Mode](./demo/thumbnail_live_camera_demo.png)](./demo/LiveCameraDemo.mp4)
+[![FaceGSM Live Camera Mode](./demo/thumbnail_live_camera_demo.png)](https://drive.google.com/file/d/1uMBreIg1snWARdIuul-TwD2hyB01fIIi/view?usp=sharing)
 
 # Installation
 
@@ -93,8 +93,10 @@ pip install -r requirements.txt
 ## Quick Start
 
 ```bash
-python3 facegsm.py manual --original original.jpg --target target.jpg --model /path/to/model/model.h5 --dataset /path/to/dataset/folder --checkpoint
+python3 facegsm.py manual --original original.jpg --target target.jpg --model /path/to/model/model.h5 --checkpoint
 ```
+
+_\* Notes : for all modes, target embeddings vector must already generated and stored in `database.json`_
 
 To get a list of basic features and options use:
 
@@ -104,12 +106,13 @@ $ python3 facegsm.py --help
 Usage: python3 facegsm.py live/camera/manual/--help
 Options:
   live: Live camera feature in FaceGSM includes real-time face recognition and attack capabilities.
-  camera: Camer original and target photos in FaceGSM.
+  camera: Camera original and target photos in FaceGSM.
   manual: Manual input for FGSM attack in FaceGSM.
+  database: Generate custom datasets
   --help: Show help for available options.
 ```
 
-FaceGSM has three main commands:
+FaceGSM has three main modes:
 
 -   manual - Manual input for FGSM attack in FaceGSM.
 -   camera - Camera capture for original and target photos in FaceGSM.
@@ -124,6 +127,12 @@ _\*Disclaimer: FaceGSM currently only supports facenet model. FaceGSM use defaul
 ## Database Generator
 
 FaceGSM use default datasets which are randomly picked 100 faces from VGGFace2 datasets. However, User can use their own dataset folder using `--datasets` options. FaceGSM then will generate a JSON database file containing _embeddings vector_ of each faces using the model.
+
+Example Command :
+
+```bash
+python3 facegsm.py database --dataset /path/to/dataset/folder
+```
 
 ## Checkpoint Options
 

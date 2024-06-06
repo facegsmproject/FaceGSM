@@ -156,15 +156,17 @@ def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
     print(f"Elapsed time: {elapsed_time}: seconds")
 
     save_checkpoint(perturbation_layer)
+    save_perturbation_layer(perturbation_layer, "perturbation_layer_live")
 
     adv_image = (original_constant + perturbation_layer).numpy().squeeze()
     adv_image = np.clip(adv_image, 0, 255).astype("uint8")
+    save_image(adv_image, "adversarial_img_live")
 
     prediction_name, prediction_level, faces = classify_face(
         adv_image, model, isAdv=True, exit=False
     )
 
-    cv2.imwrite("./outputs/adversarial_img_live.jpg", adv_image)
+    # cv2.imwrite("./outputs/adversarial_img_live.jpg", adv_image)
 
     adv_image_preprocessed = preprocess_input_facenet(
         original_constant + perturbation_layer

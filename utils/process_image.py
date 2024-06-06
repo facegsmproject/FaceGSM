@@ -71,6 +71,16 @@ def show_save_perturbation_layer(image, title):
         show_error("ERROR_SHOWING_IMAGE")
 
 
+def save_perturbation_layer(image, title):
+    try:
+        image = image[0] if len(image.shape) == 4 else image
+        plt.imshow(image)
+        plt.title(title)
+        plt.savefig(output_path + title + ".png")
+    except:
+        show_error("ERROR_SAVING_IMAGE")
+
+
 def create_padding(adv_image, faces):
     try:
         x, y, width, height = faces[0]["box"]

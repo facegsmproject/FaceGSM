@@ -59,7 +59,7 @@ async def handle_client(reader, writer):
             frame_bytes = await reader.readexactly(frame_size)
             frame = np.frombuffer(frame_bytes, dtype=np.uint8).reshape((480, 640, 3))
 
-            cv2.imwrite("./server_frame.jpg", frame)
+            cv2.imwrite("./outputs/server_frame.jpg", frame)
 
             # Process the data and respond asynchronously
             if isAttack == "True":
