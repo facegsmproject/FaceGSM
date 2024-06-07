@@ -1,6 +1,15 @@
 import os
-import sys
+import warnings
+import logging
+
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+warnings.filterwarnings("ignore", category=UserWarning, module="keras")
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
+
 import re
+import sys
 import asyncio
 from utils.interface import VideoCaptureApp
 from utils.live_client import LiveCameraClient
@@ -11,8 +20,6 @@ from utils.adv_generator import attack_adv
 from utils.ascii_art import ascii_art
 from utils.error_handling import *
 
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 load_dotenv()
 

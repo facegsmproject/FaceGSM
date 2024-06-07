@@ -24,6 +24,7 @@ error_list = {
     "MANUAL_MODE_NEED_ARG": "Manual Mode need arguments. Usage: python3 facegsm.py manual --original [original_pic_path] --target [target_pic_path]",
     "CAMERA_MODE_NEED_ARG": "Camera Mode need arguments. Usage: python3 facegsm.py camera --host [droid_cam_url]",
     "LIVE_MODE_NEED_ARG": "Live Mode need arguments. Usage: python3 facegsm.py live --host [droid_cam_url] --target [target_pic_path]",
+    "CLIENT_DISCONNECTED": "Client disconnected",
 }
 
 

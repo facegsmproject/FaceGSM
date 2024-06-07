@@ -1,4 +1,13 @@
 import os
+import warnings
+import logging
+
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+warnings.filterwarnings("ignore", category=UserWarning, module="keras")
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+logging.getLogger("tensorflow").setLevel(logging.ERROR)
+
 import asyncio
 import numpy as np
 import random
@@ -68,7 +77,7 @@ async def handle_client(reader, writer):
                 await classify(frame, model, writer)
 
     except asyncio.IncompleteReadError:
-        print("Connection closed")
+        show_error("CLIENT_DISCONNECTED")
 
     except Exception as e:
         print("Error:", e)
@@ -80,7 +89,7 @@ async def handle_client(reader, writer):
 
 async def main():
     server = await asyncio.start_server(handle_client, "127.0.0.1", 8888)
-    print("Server started...")
+    show_info("Server started...")
     async with server:
         await server.serve_forever()
 
