@@ -109,6 +109,13 @@ def show_help_mode(mode):
             "  --model: Path to the custom model file to load the trained neural network model."
         )
         sys.exit()
+    elif mode == "database":
+        print("Usage: python3 facegsm.py database --dataset [dataset_path]")
+        print("Options:")
+        print(
+            "  --dataset: Folder path of the custom dataset to create the database for FaceGSM."
+        )
+        sys.exit()
 
 
 def main():
@@ -130,27 +137,7 @@ def main():
 
     if mode == "--help":
         show_help()
-    elif mode == "database":
-        required_arg = ["--dataset"]
-        has_all_required = all(arg in sys.argv for arg in required_arg)
-        if has_all_required:
-            for arg in sys.argv:
-                if arg == "--dataset":
-                    i = sys.argv.index("--dataset")
-                    try:
-                        dataset_path = check_argv_folder(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    create_json(dataset_path, model)
-        else:
-            show_error("DATABASE_MODE_NEED_ARG")
     elif mode == "manual":
-        try:
-            if sys.argv[2] == "--help":
-                show_help_mode("manual")
-        except:
-            show_error("MANUAL_MODE_NEED_ARG")
-
         required_arg = ["--original", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -177,15 +164,11 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                     custom_model = True
                     model = load_model(model_path)
+        elif "--help" in sys.argv:
+            show_help_mode("manual")
         else:
             show_error("MANUAL_MODE_NEED_ARG")
     elif mode == "camera":
-        try:
-            if sys.argv[2] == "--help":
-                show_help_mode("camera")
-        except:
-            show_error("CAMERA_MODE_NEED_ARG")
-
         required_arg = ["--host"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -206,15 +189,11 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                     custom_model = True
                     model = load_model(model_path)
+        elif "--help" in sys.argv:
+            show_help_mode("camera")
         else:
             show_error("CAMERA_MODE_NEED_ARG")
     elif mode == "live":
-        try:
-            if sys.argv[2] == "--help":
-                show_help_mode("live")
-        except:
-            show_error("LIVE_MODE_NEED_ARG")
-
         required_arg = ["--host", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -241,8 +220,25 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                     custom_model = True
                     model = load_model(model_path)
+        elif sys.argv[2] == "--help":
+            show_help_mode("live")
         else:
             show_error("LIVE_MODE_NEED_ARG")
+    elif mode == "database":
+        required_arg = ["--dataset"]
+        has_all_required = all(arg in sys.argv for arg in required_arg)
+        if has_all_required:
+            for arg in sys.argv:
+                if arg == "--dataset":
+                    i = sys.argv.index("--dataset")
+                    try:
+                        dataset_path = check_argv_folder(sys.argv[i + 1])
+                    except:
+                        show_error_arg("NO_VALUE_PROVIDED", arg)
+        elif "--help" in sys.argv:
+            show_help_mode("database")
+        else:
+            show_error("DATABASE_MODE_NEED_ARG")
     else:
         show_error("MODE_INVALID")
         sys.exit()
@@ -263,6 +259,8 @@ def main():
         VideoCaptureApp(url_droid_cam, model, isCheckpoint)
     elif mode == "manual":
         attack_adv(original_pic_path, target_pic_path, model, isCheckpoint)
+    elif mode == "database":
+        create_json(dataset_path, model)
 
 
 if __name__ == "__main__":
