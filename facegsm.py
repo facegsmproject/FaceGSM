@@ -62,11 +62,12 @@ def check_outputs_folder():
 def show_help():
     print("Usage: python3 facegsm.py live/camera/manual/--help")
     print("Options:")
+    print("  manual: Manual input for FGSM attack in FaceGSM.")
+    print("  camera: Camera original and target photos in FaceGSM.")
     print(
         "  live: Live camera feature in FaceGSM includes real-time face recognition and attack capabilities."
     )
-    print("  camera: Camera original and target photos in FaceGSM.")
-    print("  manual: Manual input for FGSM attack in FaceGSM.")
+    print("  database: Create a database based on datasets for FaceGSM.")
     print("  --help: Show help for available options.")
     sys.exit()
 

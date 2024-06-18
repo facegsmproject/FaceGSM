@@ -1,6 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
-from utils.error_handling import show_error
+from utils.error_handling import *
 
 output_path = "./outputs/"
 
@@ -27,6 +27,8 @@ def rect_gen(person_name, cos_sim, frame, faces, filename):
     try:
         for face in faces:
             x, y, w, h = face["box"]
+            if type(cos_sim) == str:
+                cos_sim = float(cos_sim)
             text = f"{person_name}: {cos_sim:.2f}%"
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 204), 2)
             cv2.putText(
@@ -38,6 +40,7 @@ def rect_gen(person_name, cos_sim, frame, faces, filename):
                 (0, 255, 204),
                 1,
             )  # frame, text, location, font, font size, color, thickness
+            show_info(f"Saving {filename}...")
             cv2.imwrite(output_path + filename + ".png", frame)
     except:
         show_error("ERROR_RECTANGLE")
