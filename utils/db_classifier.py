@@ -34,7 +34,7 @@ def classify_face(face, model, isAdv=False, exit=True):
                 if cos_sim >= highest_result:
                     highest_result = cos_sim
                     highest_key = key
-            elif i == len(person) - 1 and highest_result == 0:
+            elif i == len(person) and highest_result == 0:
                 highest_key = "Unknown"
                 highest_result = "0.0"
                 show_error("NO_MATCH_FOUND", exit=exit)

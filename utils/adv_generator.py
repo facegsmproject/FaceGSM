@@ -166,8 +166,6 @@ def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
         adv_image, model, isAdv=True, exit=False
     )
 
-    # cv2.imwrite("./outputs/adversarial_img_live.jpg", adv_image)
-
     adv_image_preprocessed = preprocess_input_facenet(
         original_constant + perturbation_layer
     )
