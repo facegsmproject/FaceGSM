@@ -14,7 +14,6 @@ from utils.mtcnn_extractor import *
 from utils.process_image import *
 from utils.checkpoint_delta import *
 
-
 matplotlib.use("TkAgg")
 
 EPS = 2 / 255.0
@@ -24,11 +23,9 @@ TARGET_LOSS = -0.95
 optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=LR)
 loss_function = tf.keras.losses.CosineSimilarity()
 
-
 def clip_eps(tensor, eps):
     # clip the values of the tensor to a given range
     return tf.clip_by_value(tensor, clip_value_min=-eps, clip_value_max=eps)
-
 
 def adv(model, base_image, delta, target_embeddings, step=0):
     show_info("Starting Adversarial Attack...")
@@ -55,7 +52,6 @@ def adv(model, base_image, delta, target_embeddings, step=0):
         delta.assign_add(clip_eps(delta, eps=EPS))
     return delta
 
-
 def process_initial_input_image(path, role):
     face, _ = extract_face(path)
     show_image(face, f"{role} Image")
@@ -64,7 +60,6 @@ def process_initial_input_image(path, role):
     show_image(face, f"Preprocessed {role} Image")
     return face, constant
 
-
 def process_initial_input_image_live(initial_input):
     face, _ = extract_face(initial_input, exit=False)
     if face is None:
@@ -72,7 +67,6 @@ def process_initial_input_image_live(initial_input):
     constant = tf.constant(face, dtype=tf.float32)
     face = preprocess_input_facenet(face)
     return face, constant
-
 
 def attack_adv(original_path, target_path, model, isCheckpoint=False):
     original_face, original_constant = process_initial_input_image(
@@ -126,13 +120,12 @@ def attack_adv(original_path, target_path, model, isCheckpoint=False):
 
     show_info("Attack Finished...")
     cos_sim = cosine_similarity(original_embeddings, target_embeddings)[0][0]
+    cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
-
-    cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
-    print(f"[+] Cosine Similarity between target and adversarial embeddings:{cos_sim}%")
+    # cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
+    print(f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%")
 
     return adv_image
-
 
 def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
     original_face, original_constant = process_initial_input_image_live(original_input)
@@ -175,9 +168,9 @@ def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
 
     show_info("Attack Finished...")
     cos_sim = cosine_similarity(original_embeddings, target_embeddings)[0][0]
+    cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
-
-    cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
-    print(f"[+] Cosine Similarity between target and adversarial embeddings:{cos_sim}%")
+    # cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
+    print(f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%")
 
     return prediction_name, prediction_level

@@ -10,7 +10,7 @@ THRESHOLD = 60
 def classify_face(face, model, isAdv=False, exit=True):
     if isAdv:
         original_face = face
-        _, faces = extract_face(face)
+        _, faces = extract_face(face, exit=exit)
     else:
         original_face, faces = extract_face(face, exit=exit)
         if original_face is None or faces is None:

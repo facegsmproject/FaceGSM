@@ -51,7 +51,9 @@ def check_argv_url_droidcam(arg):
 
 def check_database(database_path):
     if not os.path.isfile(database_path):
-        show_error("DATABASE_JSON_NOT_FOUND")
+        with open(database_path, "w") as f:
+            show_info("Database not found. Creating a new blank database...")
+            f.write('{"predictions":{}}')
 
 
 def check_outputs_folder():
