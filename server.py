@@ -49,7 +49,6 @@ async def classify(frame, model, writer):
 async def handle_client(reader, writer):
     try:
         while True:
-            # Read the model path given by the client
             data = await reader.readuntil(separator=b"\n")
             model_path = data.decode().strip()
             model = load_model(model_path)
@@ -60,17 +59,14 @@ async def handle_client(reader, writer):
             data = await reader.readuntil(separator=b"\n")
             isAttack = data.decode().strip()
 
-            # Read the size of the message first
             data = await reader.readuntil(separator=b"\n")
             frame_size = int(data.decode().strip())
 
-            # Read the actual message based on the received size
             frame_bytes = await reader.readexactly(frame_size)
             frame = np.frombuffer(frame_bytes, dtype=np.uint8).reshape((480, 640, 3))
 
             cv2.imwrite("./outputs/server_frame.jpg", frame)
 
-            # Process the data and respond asynchronously
             if isAttack == "True":
                 await attack(frame, target_path, model, writer)
             else:

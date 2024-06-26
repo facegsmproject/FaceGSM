@@ -46,7 +46,6 @@ class VideoCaptureApp:
 
         self.btn_attack.pack(anchor=tk.CENTER, expand=True)
 
-        # Bind keyboard shortcut to snapshot function
         self.window.bind("o", self.process_original)
         self.window.bind("t", self.process_target)
         self.window.bind("a", self.attack)

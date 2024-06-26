@@ -45,7 +45,6 @@ def adv(model, base_image, delta, target_embeddings, step=0):
         if (target_loss.numpy()) <= TARGET_LOSS:
             break
 
-        # TO-DO : bikin try catch disini, tapi nanti
         gradients = tape.gradient(target_loss, delta)
         gradients = tf.sign(gradients)
         optimizer.apply_gradients([(gradients, delta)])
