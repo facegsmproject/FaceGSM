@@ -68,10 +68,10 @@ class VideoCaptureApp:
         ret, frame = self.vid.read()
         if ret:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            person_name, confidence_level, faces = classify_face(frame_rgb, self.model, exit=exit_program)
+            person_name, confidence_level, box = classify_face(frame_rgb, self.model, exit=exit_program)
             save_image(frame, role)
             role_rect = role + "_rect"
-            rect_gen(person_name, confidence_level, frame, faces, role_rect)
+            rect_gen(person_name, confidence_level, frame, box, role_rect)
 
     def process_original(self, keybind=None):
         show_info("Capturing Original Image...")

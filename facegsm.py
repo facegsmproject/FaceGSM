@@ -62,10 +62,10 @@ def check_outputs_folder():
 
 
 def show_help():
-    print("Usage: python3 facegsm.py live/camera/manual/--help")
+    print("Usage: python3 facegsm.py static/live/capture/database/--help")
     print("Options:")
-    print("  manual: Manual input for FGSM attack in FaceGSM.")
-    print("  camera: Camera original and target photos in FaceGSM.")
+    print("  static: Static input for FGSM attack in FaceGSM.")
+    print("  capture: Capture original and target photos in FaceGSM.")
     print(
         "  live: Live camera feature in FaceGSM includes real-time face recognition and attack capabilities."
     )
@@ -87,20 +87,18 @@ def show_help_mode(mode):
             "  --model: Path to the custom model file to load the trained neural network model."
         )
         sys.exit()
-    elif mode == "camera":
-        print("Usage: python3 facegsm.py camera --host [ip]")
+    elif mode == "capture":
+        print("Usage: python3 facegsm.py capture --host [ip]")
         print("Options:")
-        print(
-            "  --host: Specify the IP address for Droidcam to stream live camera feed."
-        )
+        print("  --host: Specify the IP address for Droidcam to capture the image.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
         print(
             "  --model: Path to the custom model file to load the trained neural network model."
         )
         sys.exit()
-    elif mode == "manual":
+    elif mode == "static":
         print(
-            "Usage: python3 facegsm.py manual --original [original_image_path] -target [target_image_path]"
+            "Usage: python3 facegsm.py static --original [original_image_path] -target [target_image_path]"
         )
         print("Options:")
         print(
@@ -126,12 +124,15 @@ def main():
     database_path = os.getenv("DATABASE_PATH")
     dataset_path, custom_model, isCheckpoint = False, False, False
     original_pic_path, target_pic_path, url_droid_cam = "", "", ""
-    modes = ["live", "camera", "manual", "database", "--help"]
+    modes = ["static", "live", "capture", "database", "--help"]
     ascii_art()
     check_database(database_path)
     check_outputs_folder()
 
     model = load_model(model_path)
+    input_layer = model.layers[0].input
+    output_layer = model.layers[-1].output
+    required_size = model.input_shape[1:3]  # input shape size
 
     try:
         mode = sys.argv[1].lower()
@@ -140,7 +141,7 @@ def main():
 
     if mode == "--help":
         show_help()
-    elif mode == "manual":
+    elif mode == "static":
         required_arg = ["--original", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -166,12 +167,19 @@ def main():
                     except:
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                     custom_model = True
-                    model = load_model(model_path)
+                    try:
+                        model = load_model(model_path)
+                        required_size = model.input_shape[1:3]  # input shape size
+                        model_output_dimension = model.output_shape[
+                            1
+                        ]  # embeddings size
+                    except:
+                        show_error("MODEL_INVALID")
         elif "--help" in sys.argv:
-            show_help_mode("manual")
+            show_help_mode("static")
         else:
-            show_error("MANUAL_MODE_NEED_ARG")
-    elif mode == "camera":
+            show_error("STATIC_MODE_NEED_ARG")
+    elif mode == "capture":
         required_arg = ["--host"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -191,11 +199,18 @@ def main():
                     except:
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                     custom_model = True
-                    model = load_model(model_path)
+                    try:
+                        model = load_model(model_path)
+                        required_size = model.input_shape[1:3]  # input shape size
+                        model_output_dimension = model.output_shape[
+                            1
+                        ]  # embeddings size
+                    except:
+                        show_error("MODEL_INVALID")
         elif "--help" in sys.argv:
-            show_help_mode("camera")
+            show_help_mode("capture")
         else:
-            show_error("CAMERA_MODE_NEED_ARG")
+            show_error("CAPTURE_MODE_NEED_ARG")
     elif mode == "live":
         required_arg = ["--host", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
@@ -222,7 +237,14 @@ def main():
                     except:
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                     custom_model = True
-                    model = load_model(model_path)
+                    try:
+                        model = load_model(model_path)
+                        required_size = model.input_shape[1:3]  # input shape size
+                        model_output_dimension = model.output_shape[
+                            1
+                        ]  # embeddings size
+                    except:
+                        show_error("MODEL_INVALID")
         elif sys.argv[2] == "--help":
             show_help_mode("live")
         else:
@@ -238,6 +260,21 @@ def main():
                         dataset_path = check_argv_folder(sys.argv[i + 1])
                     except:
                         show_error_arg("NO_VALUE_PROVIDED", arg)
+                elif arg == "--model":
+                    i = sys.argv.index("--model")
+                    try:
+                        model_path = check_argv_file(sys.argv[i + 1])
+                    except:
+                        show_error_arg("NO_VALUE_PROVIDED", arg)
+                    custom_model = True
+                    try:
+                        model = load_model(model_path)
+                        required_size = model.input_shape[1:3]  # input shape size
+                        model_output_dimension = model.output_shape[
+                            1
+                        ]  # embeddings size
+                    except:
+                        show_error("MODEL_INVALID")
         elif "--help" in sys.argv:
             show_help_mode("database")
         else:
@@ -251,19 +288,19 @@ def main():
     else:
         show_info("Using Default Model...")
 
-    # only accept facenet model with input shape 160x160
-    if model.input_shape[1:3] != (160, 160):
-        show_error("MODEL_INVALID")
-
     if mode == "live":
-        handler = LiveCameraClient(target_pic_path, url_droid_cam, model_path)
+        handler = LiveCameraClient(
+            target_pic_path, url_droid_cam, model_path, required_size
+        )
         asyncio.run(handler.initialize())
-    elif mode == "camera":
+    elif mode == "capture":
         VideoCaptureApp(url_droid_cam, model, isCheckpoint)
-    elif mode == "manual":
-        attack_adv(original_pic_path, target_pic_path, model, isCheckpoint)
+    elif mode == "static":
+        attack_adv(
+            original_pic_path, target_pic_path, model, required_size, isCheckpoint
+        )
     elif mode == "database":
-        create_json(dataset_path, model)
+        create_json(dataset_path, model, required_size)
 
 
 if __name__ == "__main__":

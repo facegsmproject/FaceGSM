@@ -1,12 +1,12 @@
 import sys
 
-modes = ["live", "camera", "manual", "database", "--help"]
+modes = ["static", "live", "capture", "database", "--help"]
 
 error_list = {
     "MODE_NOT_PROVIDED": f"Mode is not provided. Mode should be one of {modes}",
     "MODE_INVALID": f"Mode is invalid. Mode should be one of {modes}",
     "DATABASE_JSON_NOT_FOUND": "Database not found. Please provide a dataset path to create database",
-    "MODEL_INVALID": "Model shape is incompatible. Please provide a facenet model with 160 x 160 input shape",
+    "MODEL_INVALID": "The model provided is not a valid model. Please use a valid h5 embeddings model",
     "NO_VALUE_PROVIDED": "No value provided. Please provide a value",
     "FOLDER_INVALID": "Folder path is invalid. Please provide a valid folder path",
     "EMPTY_FOLDER": "Folder is empty. Please provide a folder with images",
@@ -21,8 +21,8 @@ error_list = {
     "ERROR_SAVING_IMAGE": "Error in saving image",
     "ERROR_SHOWING_IMAGE": "Error in showing image",
     "ERROR_CREATING_PADDING": "Error in creating padding",
-    "MANUAL_MODE_NEED_ARG": "Manual Mode need arguments. Usage: python3 facegsm.py manual --original [original_pic_path] --target [target_pic_path]",
-    "CAMERA_MODE_NEED_ARG": "Camera Mode need arguments. Usage: python3 facegsm.py camera --host [droid_cam_url]",
+    "STATIC_MODE_NEED_ARG": "Static Mode need arguments. Usage: python3 facegsm.py static --original [original_pic_path] --target [target_pic_path]",
+    "CAPTURE_MODE_NEED_ARG": "Capture Mode need arguments. Usage: python3 facegsm.py capture --host [droid_cam_url]",
     "LIVE_MODE_NEED_ARG": "Live Mode need arguments. Usage: python3 facegsm.py live --host [droid_cam_url] --target [target_pic_path]",
     "CLIENT_DISCONNECTED": "Client disconnected",
 }

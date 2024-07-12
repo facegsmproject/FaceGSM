@@ -1,14 +1,7 @@
-import asyncio
-import numpy as np
-
-import os
 import cv2
-from PIL import Image
+import asyncio
 from dotenv import load_dotenv
-from utils.db_classifier import classify_face
-from utils.adv_generator import attack_adv
-from utils.process_image import *
-from utils.error_handling import *
+from utils.process_image import rect_gen_live
 
 load_dotenv()
 
@@ -19,11 +12,12 @@ face_cascade = cv2.CascadeClassifier(
 
 
 class LiveCameraClient:
-    def __init__(self, target_path, URL_DROIDCAM, model_path):
+    def __init__(self, target_path, URL_DROIDCAM, model_path, required_size):
         self.init_droidcam(URL_DROIDCAM)
         self.ret, self.frame = self.vid.read()
 
         self.model_path = model_path
+        self.required_size = required_size
         self.target_path = target_path
         self.isAttack = False
 
@@ -32,12 +26,12 @@ class LiveCameraClient:
         self.reader, self.writer = await asyncio.open_connection("127.0.0.1", 8888)
         self.prediction_result = asyncio.Queue()
 
-        camera_feed_task = asyncio.create_task(
+        live_feed_task = asyncio.create_task(
             self.update_frame(self.prediction_result)
         )
         server_task = asyncio.create_task(self.process_frame_to_be_sent(self.frame))
 
-        await asyncio.gather(camera_feed_task, server_task)
+        await asyncio.gather(live_feed_task, server_task)
 
         self.writer.close()
         await self.writer.wait_closed()
@@ -62,6 +56,8 @@ class LiveCameraClient:
         self.writer.write(f"{frame_size}\n".encode())
         await self.writer.drain()
         self.writer.write(frame_bytes)
+        await self.writer.drain()
+        self.writer.write(f"{self.required_size}\n".encode())
         await self.writer.drain()
 
         # server return 2 values, person_name and confidence_level
@@ -95,7 +91,9 @@ class LiveCameraClient:
                     gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
                 )
 
-                frame = rect_gen_live(self.frame, faces, person_name, confidence_level)
+                frame = rect_gen_live(
+                    self.frame, faces, person_name, confidence_level, self.required_size
+                )
                 cv2.imshow("FaceGSM", frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     asyncio.get_event_loop().stop()
