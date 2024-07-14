@@ -1,10 +1,9 @@
 import os
 import cv2
 import numpy as np
-from PIL import Image
 import mediapipe as mp
+from PIL import Image
 from numpy import asarray
-from mtcnn.mtcnn import MTCNN
 import matplotlib.pyplot as plt
 from utils.error_handling import *
 

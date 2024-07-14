@@ -294,7 +294,7 @@ def main():
         )
         asyncio.run(handler.initialize())
     elif mode == "capture":
-        VideoCaptureApp(url_droid_cam, model, isCheckpoint)
+        VideoCaptureApp(url_droid_cam, model, isCheckpoint, required_size)
     elif mode == "static":
         attack_adv(
             original_pic_path, target_pic_path, model, required_size, isCheckpoint

@@ -12,13 +12,14 @@ load_dotenv()
 
 
 class VideoCaptureApp:
-    def __init__(self, URL_DROIDCAM, model, isCheckpoint):
+    def __init__(self, URL_DROIDCAM, model, isCheckpoint, required_size):
         window = tk.Tk()
         self.window = window
         window_title = "FaceGSM"
         self.window.title(window_title)
         self.video_source = URL_DROIDCAM
         self.vid = cv2.VideoCapture(self.video_source)
+        self.required_size = required_size
 
         self.model = model
         self.isCheckpoint = isCheckpoint
@@ -68,7 +69,7 @@ class VideoCaptureApp:
         ret, frame = self.vid.read()
         if ret:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            person_name, confidence_level, box = classify_face(frame_rgb, self.model, exit=exit_program)
+            person_name, confidence_level, box = classify_face(frame_rgb, self.model, self.required_size, exit=exit_program)
             save_image(frame, role)
             role_rect = role + "_rect"
             rect_gen(person_name, confidence_level, frame, box, role_rect)
@@ -89,4 +90,4 @@ class VideoCaptureApp:
         self.window.destroy()
         self.vid.release()
 
-        attack_adv(original_path, target_path, self.model, self.isCheckpoint)
+        attack_adv(original_path, target_path, self.model, self.required_size, self.isCheckpoint)
