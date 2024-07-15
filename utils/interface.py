@@ -10,13 +10,10 @@ from utils.error_handling import *
 
 load_dotenv()
 
-
 class VideoCaptureApp:
     def __init__(self, URL_DROIDCAM, model, isCheckpoint, required_size):
-        window = tk.Tk()
-        self.window = window
-        window_title = "FaceGSM"
-        self.window.title(window_title)
+        self.window = tk.Tk()
+        self.window.title("FaceGSM")
         self.video_source = URL_DROIDCAM
         self.vid = cv2.VideoCapture(self.video_source)
         self.required_size = required_size
@@ -25,35 +22,36 @@ class VideoCaptureApp:
         self.isCheckpoint = isCheckpoint
 
         self.canvas = tk.Canvas(
-            window,
+            self.window,
             width=self.vid.get(cv2.CAP_PROP_FRAME_WIDTH),
             height=self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT),
         )
         self.canvas.pack()
 
         self.btn_process_original = tk.Button(
-            window, text="Capture Original", width=50, command=self.process_original
+            self.window, text="Capture Original", width=50, command=self.process_original
         )
         self.btn_process_original.pack(anchor=tk.CENTER, expand=True)
 
         self.btn_process_target = tk.Button(
-            window, text="Capture Target", width=50, command=self.process_target
+            self.window, text="Capture Target", width=50, command=self.process_target
         )
         self.btn_process_target.pack(anchor=tk.CENTER, expand=True)
 
         self.btn_attack = tk.Button(
-            window, text="Attack", width=50, command=self.attack
+            self.window, text="Attack", width=50, command=self.attack
         )
-
         self.btn_attack.pack(anchor=tk.CENTER, expand=True)
 
         self.window.bind("o", self.process_original)
         self.window.bind("t", self.process_target)
         self.window.bind("a", self.attack)
-        self.window.bind("q", self.window.quit())
+        self.window.bind("q", lambda e: self.on_closing())
 
+        self.update_id = None
         self.update()
 
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.window.mainloop()
 
     def update(self):
@@ -62,7 +60,7 @@ class VideoCaptureApp:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame_rgb))
             self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
-        self.window.after(10, self.update)
+        self.update_id = self.window.after(10, self.update)
 
     def process_frame(self, role):
         exit_program = False if role == "original" else True
@@ -87,7 +85,12 @@ class VideoCaptureApp:
         original_path = os.getenv("ORIGINAL_IMAGE_PATH")
         target_path = os.getenv("TARGET_IMAGE_PATH")
 
-        self.window.destroy()
-        self.vid.release()
+        self.on_closing()
 
         attack_adv(original_path, target_path, self.model, self.required_size, self.isCheckpoint)
+
+    def on_closing(self):
+        if self.update_id is not None:
+            self.window.after_cancel(self.update_id)
+        self.vid.release()
+        self.window.destroy()
