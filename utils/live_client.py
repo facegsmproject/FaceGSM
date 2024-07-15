@@ -2,14 +2,12 @@ import cv2
 import asyncio
 from dotenv import load_dotenv
 from utils.process_image import rect_gen_live
+import mediapipe as mp
 
 load_dotenv()
 
-
-face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-)
-
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, min_detection_confidence=0.5)
 
 class LiveCameraClient:
     def __init__(self, target_path, URL_DROIDCAM, model_path, required_size):
@@ -84,17 +82,34 @@ class LiveCameraClient:
                     f"person_name: {person_name}, confidence_level: {confidence_level}"
                 )
             ret, self.frame = self.vid.read()
-            if ret:
-                gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-                # Detect faces with Haar Cascade
-                faces = face_cascade.detectMultiScale(
-                    gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
-                )
+            if ret:       
+                image_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                height, width, _ = self.frame.shape
+                result = face_mesh.process(image_rgb)
+                if result.multi_face_landmarks:
+                    for face_landmarks in result.multi_face_landmarks:
+                        x_coords = [landmark.x * width for landmark in face_landmarks.landmark]
+                        y_coords = [landmark.y * height for landmark in face_landmarks.landmark]
 
-                frame = rect_gen_live(
-                    self.frame, faces, person_name, confidence_level, self.required_size
-                )
-                cv2.imshow("FaceGSM", frame)
+                        min_x, max_x = min(x_coords), max(x_coords)
+                        min_y, max_y = min(y_coords), max(y_coords)
+
+                        w = max_x - min_x
+                        h = max_y - min_y
+
+                        x = int(min_x)
+                        y = int(min_y)
+                        w = int(w)
+                        h = int(h)
+
+                        faces = [x, y, w, h]
+
+                    frame = rect_gen_live(
+                        self.frame, faces, person_name, confidence_level, self.required_size
+                    )
+                    cv2.imshow("FaceGSM", frame)
+                else:
+                    cv2.imshow("FaceGSM", self.frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     asyncio.get_event_loop().stop()
                     break

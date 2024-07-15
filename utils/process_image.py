@@ -6,7 +6,8 @@ output_path = "./outputs/"
 
 
 def rect_gen_live(frame, faces, person_name, confidence_level, image_size):
-    for x, y, w, h in faces:
+    try:
+        x, y, w, h = faces
 
         text = f"{person_name}: {confidence_level}%"
 
@@ -20,6 +21,8 @@ def rect_gen_live(frame, faces, person_name, confidence_level, image_size):
             (0, 255, 204),
             1,
         )
+    except:
+        pass
     return frame
 
 
@@ -38,7 +41,7 @@ def rect_gen(person_name, cos_sim, frame, box, filename):
             0.5,
             (0, 255, 204),
             1,
-        )  # frame, text, location, font, font size, color, thickness
+        )
         show_info(f"Saving {filename}...")
         cv2.imwrite(output_path + filename + ".png", frame)
     except:
