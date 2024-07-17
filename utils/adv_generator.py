@@ -54,29 +54,38 @@ def adv(model, base_image, delta, target_embeddings, step=0):
     return delta
 
 
-def process_initial_input_image(path, role, required_size):
+def process_initial_input_image(path, role, required_size, custom_preprocess):
     face, _ = extract_face(path, required_size)
     show_image(face, f"{role} Image")
     constant = tf.constant(face, dtype=tf.float32)
-    face = preprocess_input_image(face)
+    face = preprocess_input_image(face, custom_preprocess)
     show_image(face, f"Preprocessed {role} Image")
     return face, constant
 
 
-def process_initial_input_image_live(initial_input, required_size):
+def process_initial_input_image_live(initial_input, required_size, custom_preprocess):
     face, _ = extract_face(initial_input, required_size, exit=False)
     if face is None:
         return None, None
     constant = tf.constant(face, dtype=tf.float32)
-    face = preprocess_input_image(face)
+    face = preprocess_input_image(face, custom_preprocess)
     return face, constant
 
 
-def attack_adv(original_path, target_path, model, required_size, isCheckpoint=False):
+def attack_adv(
+    original_path,
+    target_path,
+    model,
+    required_size,
+    custom_preprocess,
+    isCheckpoint=False,
+):
     original_face, original_constant = process_initial_input_image(
-        original_path, "Original", required_size
+        original_path, "Original", required_size, custom_preprocess
     )
-    target_face, _ = process_initial_input_image(target_path, "Target", required_size)
+    target_face, _ = process_initial_input_image(
+        target_path, "Target", required_size, custom_preprocess
+    )
     target_embeddings = model.predict(target_face)
 
     delta = tf.Variable(
@@ -100,7 +109,7 @@ def attack_adv(original_path, target_path, model, required_size, isCheckpoint=Fa
     save_image(cv2.cvtColor(adv_image, cv2.COLOR_BGR2RGB), "adversarial_img")
 
     prediction_name, prediction_level, box = classify_face(
-        adv_image, model, required_size, isAdv=True
+        adv_image, model, required_size, custom_preprocess, isAdv=True
     )
 
     _, box = extract_face(adv_image, required_size)  # take faces for rect_gen
@@ -114,7 +123,7 @@ def attack_adv(original_path, target_path, model, required_size, isCheckpoint=Fa
     )
 
     adv_image_preprocessed = preprocess_input_image(
-        original_constant + perturbation_layer
+        original_constant + perturbation_layer, custom_preprocess
     )
     show_image(adv_image_preprocessed, "Preprocessed Adversarial Image")
 
@@ -134,15 +143,22 @@ def attack_adv(original_path, target_path, model, required_size, isCheckpoint=Fa
 
 
 def attack_adv_live(
-    original_input, target_path, model, required_size, isCheckpoint=True
+    original_input,
+    target_path,
+    model,
+    required_size,
+    custom_preprocess,
+    isCheckpoint=True,
 ):
     original_face, original_constant = process_initial_input_image_live(
-        original_input, required_size
+        original_input, required_size, custom_preprocess
     )
 
     if original_face is None:
         return "Unknown", "0.0"
-    target_face, _ = process_initial_input_image_live(target_path, required_size)
+    target_face, _ = process_initial_input_image_live(
+        target_path, required_size, custom_preprocess
+    )
     target_embeddings = model.predict(target_face)
 
     delta = tf.Variable(
@@ -166,11 +182,11 @@ def attack_adv_live(
     save_image(cv2.cvtColor(adv_image, cv2.COLOR_BGR2RGB), "adversarial_img_live")
 
     prediction_name, prediction_level, box = classify_face(
-        adv_image, model, required_size, isAdv=True, exit=False
+        adv_image, model, required_size, custom_preprocess, isAdv=True, exit=False
     )
 
     adv_image_preprocessed = preprocess_input_image(
-        original_constant + perturbation_layer
+        original_constant + perturbation_layer, custom_preprocess
     )
 
     original_embeddings = model.predict(original_face)

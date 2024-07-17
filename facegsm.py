@@ -61,7 +61,7 @@ def check_outputs_folder():
 
 
 def show_help():
-    print("Usage: python3 facegsm.py static/live/capture/database/--help")
+    print("Usage: python3 facegsm.py [ static | live | capture | database ] --help")
     print("Options:")
     print("  static: Static input for FGSM attack in FaceGSM.")
     print("  capture: Capture original and target photos in FaceGSM.")
@@ -85,6 +85,9 @@ def show_help_mode(mode):
         print(
             "  --model: Path to the custom model file to load the trained neural network model."
         )
+        print(
+            "  --custom-preprocess: Use your own custom preprocessing function for the model."
+        )
         sys.exit()
     elif mode == "capture":
         print("Usage: python3 facegsm.py capture --host [ip]")
@@ -94,10 +97,13 @@ def show_help_mode(mode):
         print(
             "  --model: Path to the custom model file to load the trained neural network model."
         )
+        print(
+            "  --custom-preprocess: Use your own custom preprocessing function for the model."
+        )
         sys.exit()
     elif mode == "static":
         print(
-            "Usage: python3 facegsm.py static --original [original_image_path] -target [target_image_path]"
+            "Usage: python3 facegsm.py static --original [original_image_path] --target [target_image_path]"
         )
         print("Options:")
         print(
@@ -108,6 +114,9 @@ def show_help_mode(mode):
         print(
             "  --model: Path to the custom model file to load the trained neural network model."
         )
+        print(
+            "  --custom-preprocess: Use your own custom preprocessing function for the model."
+        )
         sys.exit()
     elif mode == "database":
         print("Usage: python3 facegsm.py database --dataset [dataset_path]")
@@ -115,13 +124,24 @@ def show_help_mode(mode):
         print(
             "  --dataset: Folder path of the custom dataset to create the database for FaceGSM."
         )
+        print(
+            "  --model: Path to the custom model file to load the trained neural network model."
+        )
+        print(
+            "  --custom-preprocess: Use your own custom preprocessing function for the model."
+        )
         sys.exit()
 
 
 def main():
     model_path = os.getenv("DEFAULT_MODEL_PATH")
     database_path = os.getenv("DATABASE_PATH")
-    dataset_path, custom_model, isCheckpoint = False, False, False
+    dataset_path, custom_model, custom_preprocess, isCheckpoint = (
+        False,
+        False,
+        False,
+        False,
+    )
     original_pic_path, target_pic_path, url_droid_cam = "", "", ""
     modes = ["static", "live", "capture", "database", "--help"]
     ascii_art()
@@ -174,6 +194,8 @@ def main():
                         ]  # embeddings size
                     except:
                         show_error("MODEL_INVALID")
+                elif arg == "--custom-preprocess":
+                    custom_preprocess = True
         elif "--help" in sys.argv:
             show_help_mode("static")
         else:
@@ -206,6 +228,8 @@ def main():
                         ]  # embeddings size
                     except:
                         show_error("MODEL_INVALID")
+                elif arg == "--custom-preprocess":
+                    custom_preprocess = True
         elif "--help" in sys.argv:
             show_help_mode("capture")
         else:
@@ -244,6 +268,8 @@ def main():
                         ]  # embeddings size
                     except:
                         show_error("MODEL_INVALID")
+                elif arg == "--custom-preprocess":
+                    custom_preprocess = True
         elif sys.argv[2] == "--help":
             show_help_mode("live")
         else:
@@ -274,6 +300,8 @@ def main():
                         ]  # embeddings size
                     except:
                         show_error("MODEL_INVALID")
+                elif arg == "--custom-preprocess":
+                    custom_preprocess = True
         elif "--help" in sys.argv:
             show_help_mode("database")
         else:
@@ -289,17 +317,24 @@ def main():
 
     if mode == "live":
         handler = LiveCameraClient(
-            target_pic_path, url_droid_cam, model_path, required_size
+            target_pic_path, url_droid_cam, model_path, required_size, custom_preprocess
         )
         asyncio.run(handler.initialize())
     elif mode == "capture":
-        VideoCaptureApp(url_droid_cam, model, isCheckpoint, required_size)
+        VideoCaptureApp(
+            url_droid_cam, model, isCheckpoint, required_size, custom_preprocess
+        )
     elif mode == "static":
         attack_adv(
-            original_pic_path, target_pic_path, model, required_size, isCheckpoint
+            original_pic_path,
+            target_pic_path,
+            model,
+            required_size,
+            custom_preprocess,
+            isCheckpoint,
         )
     elif mode == "database":
-        create_json(dataset_path, model, required_size)
+        create_json(dataset_path, model, required_size, custom_preprocess)
 
 
 if __name__ == "__main__":

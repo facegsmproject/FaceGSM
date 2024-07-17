@@ -14,7 +14,7 @@ face_mesh = mp_face_mesh.FaceMesh(
 
 
 class LiveCameraClient:
-    def __init__(self, target_path, URL_DROIDCAM, model_path, required_size):
+    def __init__(self, target_path, URL_DROIDCAM, model_path, required_size, custom_preprocess):
         self.init_droidcam(URL_DROIDCAM)
         self.ret, self.frame = self.vid.read()
 
@@ -23,6 +23,7 @@ class LiveCameraClient:
         self.target_path = target_path
         self.isAttack = False
         self.isFirstAttack = True
+        self.custom_preprocess = custom_preprocess
 
     async def initialize(self):
 
@@ -60,6 +61,8 @@ class LiveCameraClient:
         self.writer.write(frame_bytes)
         await self.writer.drain()
         self.writer.write(f"{self.required_size}\n".encode())
+        await self.writer.drain()
+        self.writer.write(f"{self.custom_preprocess}\n".encode())
         await self.writer.drain()
 
         # server return 2 values, person_name and confidence_level

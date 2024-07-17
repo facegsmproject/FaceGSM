@@ -30,20 +30,20 @@ async def send_to_client(writer, person_name, prediction_level):
     await writer.drain()
 
 
-async def attack(original_frame, target_path, model, required_size, writer):
+async def attack(original_frame, target_path, model, required_size, custom_preprocess, writer):
     show_info("Attacking Original to Target...")
 
     person_name, prediction_level = attack_adv_live(
-        original_frame, target_path, model, required_size
+        original_frame, target_path, model, required_size, custom_preprocess
     )
     print("Person name:", person_name)
     print("Prediction level:", prediction_level)
     await send_to_client(writer, person_name, prediction_level)
 
 
-async def classify(frame, model, required_size, writer):
+async def classify(frame, model, required_size, custom_preprocess, writer):
     person_name, prediction_level, _ = classify_face(
-        frame, model, required_size, exit=False
+        frame, model, required_size, custom_preprocess, exit=False
     )
     print("Person name:", person_name)
     print("Prediction level:", prediction_level)
@@ -74,14 +74,17 @@ async def handle_client(reader, writer):
             required_size = required_size[1:-1].split(", ")
             required_size = (int(required_size[0]), int(required_size[1]))
 
+            data = await reader.readuntil(separator=b"\n")
+            custom_preprocess = True if data.decode().strip() == "True" else False
+
             cv2.imwrite("./outputs/server_frame.jpg", frame)
 
             if isAttack == "True":
                 await attack(
-                    frame, target_path, model, required_size, writer
+                    frame, target_path, model, required_size, custom_preprocess, writer
                 )
             else:
-                await classify(frame, model, required_size, writer)
+                await classify(frame, model, required_size, custom_preprocess, writer)
 
     except asyncio.IncompleteReadError:
         show_error("CLIENT_DISCONNECTED")

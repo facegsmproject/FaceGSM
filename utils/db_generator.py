@@ -8,14 +8,14 @@ from utils.error_handling import *
 predictions_dict = {}
 
 
-def create_json(folder_path, model, required_size):
+def create_json(folder_path, model, required_size, custom_preprocess):
     show_info("Creating JSON database...")
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
         show_info(f"Processing {file_path}")
         if os.path.isfile(file_path):
             face, _ = extract_face(file_path, required_size)
-            face = preprocess_input_image(face)
+            face = preprocess_input_image(face, custom_preprocess)
 
             predictions = model.predict(face)
             predictions = predictions.tolist()

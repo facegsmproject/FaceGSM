@@ -7,7 +7,7 @@ from utils.error_handling import *
 THRESHOLD = 60
 
 
-def classify_face(face, model, required_size, isAdv=False, exit=True):
+def classify_face(face, model, required_size, custom_preprocess, isAdv=False, exit=True):
     if isAdv:
         original_face = face
         _, box = extract_face(face, required_size, exit=exit)
@@ -16,7 +16,7 @@ def classify_face(face, model, required_size, isAdv=False, exit=True):
         if original_face is None or box is None:
             return "Unknown", "0.0", box
 
-    original_face = preprocess_input_image(original_face)
+    original_face = preprocess_input_image(original_face, custom_preprocess)
     original_embeddings = model.predict(original_face)
 
     with open("./databases/database.json", "r") as f:

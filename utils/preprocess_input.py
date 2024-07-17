@@ -1,9 +1,13 @@
 import tensorflow as tf
 from utils.error_handling import show_error
+from utils.preprocess_custom import preprocess_input_image_custom
 
 
 # Default preprocessing function (based on Facenet model) :
-def preprocess_input_image(face):
+def preprocess_input_image(face, custom_preprocess):
+    if custom_preprocess:
+        return preprocess_input_image_custom(face)
+
     try:
         # Use tf.cast to change data type to tensor float32
         face = tf.cast(face, tf.float32)
@@ -30,16 +34,3 @@ def preprocess_input_image(face):
 #         return face
 #     except:
 #         show_error("ERROR_PREPROCESSING")
-
-
-# Placeholder for custom preprocessing function :
-# 1. Comment the code above
-# 2. Uncomment the code below
-# 3. Implement your custom preprocessing function in the space provided
-
-# def preprocess_input_image(face):
-    # face = tf.cast(face, tf.float32)  # Do not change this line
-    # ---------------------------------------------
-    # Code your custom preprocessing function here
-    # ---------------------------------------------
-    # return face

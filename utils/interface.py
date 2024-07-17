@@ -10,13 +10,17 @@ from utils.error_handling import *
 
 load_dotenv()
 
+
 class VideoCaptureApp:
-    def __init__(self, URL_DROIDCAM, model, isCheckpoint, required_size):
+    def __init__(
+        self, URL_DROIDCAM, model, isCheckpoint, required_size, custom_preprocess
+    ):
         self.window = tk.Tk()
         self.window.title("FaceGSM")
         self.video_source = URL_DROIDCAM
         self.vid = cv2.VideoCapture(self.video_source)
         self.required_size = required_size
+        self.custom_preprocess = custom_preprocess
 
         self.model = model
         self.isCheckpoint = isCheckpoint
@@ -29,7 +33,10 @@ class VideoCaptureApp:
         self.canvas.pack()
 
         self.btn_process_original = tk.Button(
-            self.window, text="Capture Original", width=50, command=self.process_original
+            self.window,
+            text="Capture Original",
+            width=50,
+            command=self.process_original,
         )
         self.btn_process_original.pack(anchor=tk.CENTER, expand=True)
 
@@ -67,7 +74,13 @@ class VideoCaptureApp:
         ret, frame = self.vid.read()
         if ret:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            person_name, confidence_level, box = classify_face(frame_rgb, self.model, self.required_size, exit=exit_program)
+            person_name, confidence_level, box = classify_face(
+                frame_rgb,
+                self.model,
+                self.required_size,
+                self.custom_preprocess,
+                exit=exit_program,
+            )
             save_image(frame, role)
             role_rect = role + "_rect"
             rect_gen(person_name, confidence_level, frame, box, role_rect)
@@ -87,7 +100,14 @@ class VideoCaptureApp:
 
         self.on_closing()
 
-        attack_adv(original_path, target_path, self.model, self.required_size, self.isCheckpoint)
+        attack_adv(
+            original_path,
+            target_path,
+            self.model,
+            self.required_size,
+            self.custom_preprocess,
+            self.isCheckpoint,
+        )
 
     def on_closing(self):
         if self.update_id is not None:
