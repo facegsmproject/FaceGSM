@@ -29,14 +29,14 @@ def clip_eps(tensor, eps):
     return tf.clip_by_value(tensor, clip_value_min=-eps, clip_value_max=eps)
 
 
-def adv(model, base_image, delta, target_embeddings, step=0):
+def adv(model, base_image, delta, target_embeddings, custom_preprocess, step=0):
     show_info("Starting Adversarial Attack...")
     handler = partial(signal_handler, delta=delta)
     signal.signal(signal.SIGINT, handler)
     while True:
         with tf.GradientTape() as tape:
             tape.watch(delta)
-            adversary = preprocess_input_image(base_image + delta)
+            adversary = preprocess_input_image(base_image + delta, custom_preprocess)
             predictions = model(adversary)
             # model give tf.tensor, model.predict give 2d array
             target_loss = loss_function(target_embeddings, predictions)
@@ -95,7 +95,7 @@ def attack_adv(
         delta = load_checkpoint(delta)
 
     start_time = time.perf_counter()
-    perturbation_layer = adv(model, original_constant, delta, target_embeddings)
+    perturbation_layer = adv(model, original_constant, delta, target_embeddings, custom_preprocess)
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time}: seconds")
@@ -169,7 +169,7 @@ def attack_adv_live(
         delta = load_checkpoint(delta)
 
     start_time = time.perf_counter()
-    perturbation_layer = adv(model, original_constant, delta, target_embeddings)
+    perturbation_layer = adv(model, original_constant, delta, target_embeddings, custom_preprocess)
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time}: seconds")
