@@ -196,8 +196,6 @@ def main():
                         show_error("MODEL_INVALID")
                 elif arg == "--custom-preprocess":
                     custom_preprocess = True
-                else:
-                    show_error("ARGUMENT_INVALID")
         elif "--help" in sys.argv:
             show_help_mode("static")
         else:
@@ -232,8 +230,6 @@ def main():
                         show_error("MODEL_INVALID")
                 elif arg == "--custom-preprocess":
                     custom_preprocess = True
-                else:
-                    show_error("ARGUMENT_INVALID")
         elif "--help" in sys.argv:
             show_help_mode("capture")
         else:
@@ -274,8 +270,6 @@ def main():
                         show_error("MODEL_INVALID")
                 elif arg == "--custom-preprocess":
                     custom_preprocess = True
-                else:
-                    show_error("ARGUMENT_INVALID")
         elif sys.argv[2] == "--help":
             show_help_mode("live")
         else:
@@ -308,8 +302,6 @@ def main():
                         show_error("MODEL_INVALID")
                 elif arg == "--custom-preprocess":
                     custom_preprocess = True
-                else:
-                    show_error("ARGUMENT_INVALID")
         elif "--help" in sys.argv:
             show_help_mode("database")
         else:
