@@ -12,15 +12,12 @@ load_dotenv()
 
 
 class VideoCaptureApp:
-    def __init__(
-        self, URL_DROIDCAM, model, isCheckpoint, required_size, custom_preprocess
-    ):
+    def __init__(self, URL_DROIDCAM, model, isCheckpoint, required_size):
         self.window = tk.Tk()
         self.window.title("FaceGSM")
         self.video_source = URL_DROIDCAM
         self.vid = cv2.VideoCapture(self.video_source)
         self.required_size = required_size
-        self.custom_preprocess = custom_preprocess
 
         self.model = model
         self.isCheckpoint = isCheckpoint
@@ -78,7 +75,6 @@ class VideoCaptureApp:
                 frame_rgb,
                 self.model,
                 self.required_size,
-                self.custom_preprocess,
                 exit=exit_program,
             )
             save_image(frame, role)
@@ -105,7 +101,6 @@ class VideoCaptureApp:
             target_path,
             self.model,
             self.required_size,
-            self.custom_preprocess,
             self.isCheckpoint,
         )
 

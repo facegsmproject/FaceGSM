@@ -82,24 +82,12 @@ def show_help_mode(mode):
         )
         print("  --target: Folder path of the victim's face for executing FGSM attack.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
-        print(
-            "  --custom-preprocess: Use your own custom preprocessing function for the model."
-        )
         sys.exit()
     elif mode == "capture":
         print("Usage: python3 facegsm.py capture --host [ip]")
         print("Options:")
         print("  --host: Specify the IP address for Droidcam to capture the image.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
-        print(
-            "  --custom-preprocess: Use your own custom preprocessing function for the model."
-        )
         sys.exit()
     elif mode == "static":
         print(
@@ -111,12 +99,6 @@ def show_help_mode(mode):
         )
         print("  --target: Folder path of the victim's face for executing FGSM attack")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
-        print(
-            "  --custom-preprocess: Use your own custom preprocessing function for the model."
-        )
         sys.exit()
     elif mode == "database":
         print("Usage: python3 facegsm.py database --dataset [dataset_path]")
@@ -124,20 +106,13 @@ def show_help_mode(mode):
         print(
             "  --dataset: Folder path of the custom dataset to create the database for FaceGSM."
         )
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
-        print(
-            "  --custom-preprocess: Use your own custom preprocessing function for the model."
-        )
         sys.exit()
 
 
 def main():
-    model_path = os.getenv("DEFAULT_MODEL_PATH")
+    model_path = os.getenv("MODEL_PATH")
     database_path = os.getenv("DATABASE_PATH")
-    dataset_path, custom_model, custom_preprocess, isCheckpoint = (
-        False,
+    dataset_path, custom_model, isCheckpoint = (
         False,
         False,
         False,
@@ -179,23 +154,6 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
                     isCheckpoint = True
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    try:
-                        model = load_model(model_path)
-                        required_size = model.input_shape[1:3]  # input shape size
-                        model_output_dimension = model.output_shape[
-                            1
-                        ]  # embeddings size
-                    except:
-                        show_error("MODEL_INVALID")
-                elif arg == "--custom-preprocess":
-                    custom_preprocess = True
         elif "--help" in sys.argv:
             show_help_mode("static")
         else:
@@ -213,23 +171,6 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
                     isCheckpoint = True
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    try:
-                        model = load_model(model_path)
-                        required_size = model.input_shape[1:3]  # input shape size
-                        model_output_dimension = model.output_shape[
-                            1
-                        ]  # embeddings size
-                    except:
-                        show_error("MODEL_INVALID")
-                elif arg == "--custom-preprocess":
-                    custom_preprocess = True
         elif "--help" in sys.argv:
             show_help_mode("capture")
         else:
@@ -253,23 +194,6 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
                     isCheckpoint = True
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    try:
-                        model = load_model(model_path)
-                        required_size = model.input_shape[1:3]  # input shape size
-                        model_output_dimension = model.output_shape[
-                            1
-                        ]  # embeddings size
-                    except:
-                        show_error("MODEL_INVALID")
-                elif arg == "--custom-preprocess":
-                    custom_preprocess = True
         elif sys.argv[2] == "--help":
             show_help_mode("live")
         else:
@@ -285,23 +209,6 @@ def main():
                         dataset_path = check_argv_folder(sys.argv[i + 1])
                     except:
                         show_error_arg("NO_VALUE_PROVIDED", arg)
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    try:
-                        model = load_model(model_path)
-                        required_size = model.input_shape[1:3]  # input shape size
-                        model_output_dimension = model.output_shape[
-                            1
-                        ]  # embeddings size
-                    except:
-                        show_error("MODEL_INVALID")
-                elif arg == "--custom-preprocess":
-                    custom_preprocess = True
         elif "--help" in sys.argv:
             show_help_mode("database")
         else:
@@ -317,24 +224,17 @@ def main():
 
     if mode == "live":
         handler = LiveCameraClient(
-            target_pic_path, url_droid_cam, model_path, required_size, custom_preprocess
+            target_pic_path, url_droid_cam, model_path, required_size
         )
         asyncio.run(handler.initialize())
     elif mode == "capture":
-        VideoCaptureApp(
-            url_droid_cam, model, isCheckpoint, required_size, custom_preprocess
-        )
+        VideoCaptureApp(url_droid_cam, model, isCheckpoint, required_size)
     elif mode == "static":
         attack_adv(
-            original_pic_path,
-            target_pic_path,
-            model,
-            required_size,
-            custom_preprocess,
-            isCheckpoint,
+            original_pic_path, target_pic_path, model, required_size, isCheckpoint
         )
     elif mode == "database":
-        create_json(dataset_path, model, required_size, custom_preprocess)
+        create_json(dataset_path, model, required_size)
 
 
 if __name__ == "__main__":
