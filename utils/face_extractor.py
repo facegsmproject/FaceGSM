@@ -31,8 +31,7 @@ def process_image_facemesh(face, exit=True):
             show_error("FACE_NOT_FOUND", exit=exit)
             return None, None
         return results, image_rgb
-    except Exception as e:
-        print(e)
+    except:
         show_error("FACE_NOT_FOUND", exit=exit)
         return None, None
 

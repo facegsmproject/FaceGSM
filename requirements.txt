@@ -10,3 +10,4 @@ python-dotenv==1.0.1
 scikit-learn==1.4.1.post1
 tensorflow==2.15.0
 mediapipe==0.9.3.0
+pynput==1.7.7

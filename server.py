@@ -30,10 +30,10 @@ async def send_to_client(writer, person_name, prediction_level):
     await writer.drain()
 
 
-async def attack(original_frame, target_path, model, required_size, writer):
+async def attack(original_frame, target_path, model, required_size, isFirstAttack, writer):
     show_info("Attacking Original to Target...")
 
-    person_name, prediction_level = attack_adv_live(original_frame, target_path, model, required_size)
+    person_name, prediction_level = attack_adv_live(original_frame, target_path, model, required_size, isFirstAttack)
     print("Person name:", person_name)
     print("Prediction level:", prediction_level)
     await send_to_client(writer, person_name, prediction_level)
@@ -60,6 +60,10 @@ async def handle_client(reader, writer):
             isAttack = data.decode().strip()
 
             data = await reader.readuntil(separator=b"\n")
+            isFirstAttack = data.decode().strip()
+            isFirstAttack = True if isFirstAttack == "True" else False
+
+            data = await reader.readuntil(separator=b"\n")
             frame_size = int(data.decode().strip())
 
             frame_bytes = await reader.readexactly(frame_size)
@@ -73,7 +77,7 @@ async def handle_client(reader, writer):
             cv2.imwrite("./outputs/server_frame.jpg", frame)
 
             if isAttack == "True":
-                await attack(frame, target_path, model, required_size, writer)
+                await attack(frame, target_path, model, required_size, isFirstAttack, writer)
             else:
                 await classify(frame, model, required_size, writer)
 
