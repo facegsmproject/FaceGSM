@@ -55,17 +55,12 @@ class LiveCameraClient:
         await self.writer.drain()
         self.writer.write(f"{self.isAttack}\n".encode())
         await self.writer.drain()
-        self.writer.write(f"{self.isFirstAttack}\n".encode())
-        await self.writer.drain()
         self.writer.write(f"{frame_size}\n".encode())
         await self.writer.drain()
         self.writer.write(frame_bytes)
         await self.writer.drain()
         self.writer.write(f"{self.required_size}\n".encode())
         await self.writer.drain()
-
-        if self.isAttack and self.isFirstAttack:
-            self.isFirstAttack = False
 
         # server return 2 values, person_name and confidence_level
 

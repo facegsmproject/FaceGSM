@@ -134,7 +134,7 @@ def attack_adv(original_path, target_path, model, required_size, isCheckpoint=Fa
 
 
 def attack_adv_live(
-    original_input, target_path, model, required_size, isFirstAttack, isCheckpoint=True
+    original_input, target_path, model, required_size, isCheckpoint=True
 ):
     original_face, original_constant = process_initial_input_image_live(
         original_input, required_size
@@ -151,17 +151,15 @@ def attack_adv_live(
 
     if os.path.isdir("./checkpoints") and len(os.listdir("./checkpoints")) != 0:
         delta = load_checkpoint(delta)
-        perturbation_layer = delta
 
-    print("Is First Attack:", isFirstAttack)
-    if isFirstAttack:
-        start_time = time.perf_counter()
-        perturbation_layer = adv(model, original_constant, delta, target_embeddings)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f"Elapsed time: {elapsed_time}: seconds")
-        save_checkpoint(perturbation_layer)
-        save_perturbation_layer(perturbation_layer, "perturbation_layer_live")
+    start_time = time.perf_counter()
+    perturbation_layer = adv(model, original_constant, delta, target_embeddings)
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time}: seconds")
+
+    save_checkpoint(perturbation_layer)
+    save_perturbation_layer(perturbation_layer, "perturbation_layer_live")
 
     adv_image = (original_constant + perturbation_layer).numpy().squeeze()
     adv_image = np.clip(adv_image, 0, 255).astype("uint8")
