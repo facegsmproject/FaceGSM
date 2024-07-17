@@ -25,6 +25,7 @@ error_list = {
     "CAPTURE_MODE_NEED_ARG": "Capture Mode need arguments. Usage: python3 facegsm.py capture --host [droid_cam_url]",
     "LIVE_MODE_NEED_ARG": "Live Mode need arguments. Usage: python3 facegsm.py live --host [droid_cam_url] --target [target_pic_path]",
     "CLIENT_DISCONNECTED": "Client disconnected",
+    "ARGUMENT_INVALID": "Argument is invalid. Please provide a valid argument",
 }
 
 
