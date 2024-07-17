@@ -9,8 +9,7 @@ def preprocess_input_image_custom(face):
         # Do not change the code above
 
         # ---------------------------------------------
-        face -= 127.5
-        face /= 128
+        # Code your custom preprocessing function here
         # ---------------------------------------------
 
         # Do not change the code below
