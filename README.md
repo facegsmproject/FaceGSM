@@ -66,7 +66,7 @@
 
 # [🔑] Key Features
 
-✅ Fully compatible with over **XX facial recognition embedding model** including [FaceNet](https://github.com/davidsandberg/facenet) and [ArcFace](https://insightface.ai/arcface)<br>
+✅ Fully compatible with **multiple facial recognition embedding model** including [FaceNet](https://github.com/davidsandberg/facenet) and [ArcFace](https://insightface.ai/arcface)<br>
 ✅ Supports **multiple input media**, including static image, captured image and live video feed<br>
 ✅ Saved generated adversarial image as **checkpoints** to increase efficiency for future attacks<br>
 ✅ Works with your own **Custom Face Datasets**<br>
