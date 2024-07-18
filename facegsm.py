@@ -10,9 +10,9 @@ logging.getLogger("tensorflow").setLevel(logging.ERROR)
 import re
 import sys
 import asyncio
+from dotenv import load_dotenv
 from utils.interface import VideoCaptureApp
 from utils.live_client import LiveCameraClient
-from dotenv import load_dotenv
 from keras.models import load_model
 from utils.db_generator import create_json
 from utils.adv_generator import attack_adv
