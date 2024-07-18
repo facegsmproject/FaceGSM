@@ -1,4 +1,4 @@
-# Python 3.10.11
+tensorflow==2.15.0
 h5py==3.10.0
 matplotlib==3.8.3
 numpy==1.26.4
@@ -8,6 +8,5 @@ pillow==10.2.0
 protobuf==3.20.3
 python-dotenv==1.0.1
 scikit-learn==1.4.1.post1
-tensorflow==2.15.0
 mediapipe==0.9.3.0
 pynput==1.7.7

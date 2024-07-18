@@ -30,12 +30,12 @@ def signal_handler(sig, frame, delta):
     if choice == "s":
         show_info("Saving and Exiting...")
         save_checkpoint(delta)
-        os.exit(0)
+        os._exit(0)
     elif choice == "c":
         show_info("Continuing...")
         return
     elif choice == "e":
         show_info("Exiting without Saving...")
-        os.exit(0)
+        os._exit(0)
     else:
         signal_handler(sig, frame, delta)

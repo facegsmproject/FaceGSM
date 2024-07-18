@@ -127,16 +127,12 @@ class LiveCameraClient:
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         asyncio.get_event_loop().stop()
                         break
-                        # elif cv2.waitKey(1) & 0xFF == ord("a"):
-                        #     self.isAttack = not self.isAttack
-                        #     print("Attacking:", self.isAttack)
-                        await asyncio.sleep(0.1)
                 await asyncio.sleep(0.01)
 
             self.vid.release()
             cv2.destroyAllWindows()
         except:
-            os.exit(0)
+            os._exit(0)
 
     async def check_a_key(self):
         def on_press(key):

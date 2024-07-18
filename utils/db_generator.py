@@ -28,5 +28,6 @@ def create_json(folder_path, model, required_size):
     show_info("Writing JSON database...")
     output = {"predictions": predictions_dict}
     output_json = json.dumps(output)
+    folder_path = folder_path.split("/")[-1]
     with open("./databases/" + folder_path + ".json", "w") as f:
         f.write(output_json)
