@@ -1,43 +1,40 @@
-import asyncio
-import numpy as np
-
 import os
 import cv2
-from PIL import Image
+import asyncio
 from dotenv import load_dotenv
-from utils.db_classifier import classify_face
-from utils.adv_generator import attack_adv
-from utils.process_image import *
-from utils.error_handling import *
+from utils.process_image import rect_gen_live
+import mediapipe as mp
+from pynput import keyboard
 
 load_dotenv()
 
-
-face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(
+    static_image_mode=True, max_num_faces=1, min_detection_confidence=0.5
 )
 
 
 class LiveCameraClient:
-    def __init__(self, target_path, URL_DROIDCAM, model_path):
+    def __init__(self, target_path, URL_DROIDCAM, model_path, required_size):
         self.init_droidcam(URL_DROIDCAM)
         self.ret, self.frame = self.vid.read()
 
         self.model_path = model_path
+        self.required_size = required_size
         self.target_path = target_path
         self.isAttack = False
+        self.isFirstAttack = True
 
     async def initialize(self):
 
         self.reader, self.writer = await asyncio.open_connection("127.0.0.1", 8888)
         self.prediction_result = asyncio.Queue()
 
-        camera_feed_task = asyncio.create_task(
-            self.update_frame(self.prediction_result)
-        )
+        live_feed_task = asyncio.create_task(self.update_frame(self.prediction_result))
         server_task = asyncio.create_task(self.process_frame_to_be_sent(self.frame))
+        key_task = asyncio.create_task(self.check_a_key())
 
-        await asyncio.gather(camera_feed_task, server_task)
+        await asyncio.gather(live_feed_task, server_task, key_task)
 
         self.writer.close()
         await self.writer.wait_closed()
@@ -63,6 +60,8 @@ class LiveCameraClient:
         await self.writer.drain()
         self.writer.write(frame_bytes)
         await self.writer.drain()
+        self.writer.write(f"{self.required_size}\n".encode())
+        await self.writer.drain()
 
         # server return 2 values, person_name and confidence_level
 
@@ -80,31 +79,74 @@ class LiveCameraClient:
         self.vid = cv2.VideoCapture(self.video_source)
 
     async def update_frame(self, prediction_result):
-        person_name, confidence_level = "Unknown", "0.0"
-        while True:
-            if not prediction_result.empty():
-                person_name, confidence_level = await prediction_result.get()
-                print(
-                    f"person_name: {person_name}, confidence_level: {confidence_level}"
-                )
-            ret, self.frame = self.vid.read()
-            if ret:
-                gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-                # Detect faces with Haar Cascade
-                faces = face_cascade.detectMultiScale(
-                    gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
-                )
+        try :
+            person_name, confidence_level = "Unknown", "0.0"
+            while True:
+                if not prediction_result.empty():
+                    person_name, confidence_level = await prediction_result.get()
+                    print(
+                        f"person_name: {person_name}, confidence_level: {confidence_level}"
+                    )
+                ret, self.frame = self.vid.read()
+                if ret:
+                    image_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                    height, width, _ = self.frame.shape
+                    result = face_mesh.process(image_rgb)
+                    if result.multi_face_landmarks:
+                        for face_landmarks in result.multi_face_landmarks:
+                            x_coords = [
+                                landmark.x * width for landmark in face_landmarks.landmark
+                            ]
+                            y_coords = [
+                                landmark.y * height for landmark in face_landmarks.landmark
+                            ]
 
-                frame = rect_gen_live(self.frame, faces, person_name, confidence_level)
-                cv2.imshow("FaceGSM", frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    asyncio.get_event_loop().stop()
-                    break
-                elif cv2.waitKey(1) & 0xFF == ord("a"):
+                            min_x, max_x = min(x_coords), max(x_coords)
+                            min_y, max_y = min(y_coords), max(y_coords)
+
+                            w = max_x - min_x
+                            h = max_y - min_y
+
+                            x = int(min_x)
+                            y = int(min_y)
+                            w = int(w)
+                            h = int(h)
+
+                            faces = [x, y, w, h]
+
+                        frame = rect_gen_live(
+                            self.frame,
+                            faces,
+                            person_name,
+                            confidence_level,
+                            self.required_size,
+                        )
+                        cv2.imshow("FaceGSM", frame)
+                    else:
+                        cv2.imshow("FaceGSM", self.frame)
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        asyncio.get_event_loop().stop()
+                        break
+                await asyncio.sleep(0.01)
+
+            self.vid.release()
+            cv2.destroyAllWindows()
+        except:
+            os._exit(0)
+
+    async def check_a_key(self):
+        def on_press(key):
+            try:
+                if key.char == "a":
                     self.isAttack = not self.isAttack
                     print("Attacking:", self.isAttack)
-                    await asyncio.sleep(0.1)
-            await asyncio.sleep(0.01)
+            except AttributeError:
+                pass
 
-        self.vid.release()
-        cv2.destroyAllWindows()
+        def on_release(key):
+            pass
+
+        listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+        listener.start()
+        while True:
+            await asyncio.sleep(0.1)

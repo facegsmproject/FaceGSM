@@ -1,25 +1,31 @@
+import os
 import json
 from sklearn.metrics.pairwise import cosine_similarity
-from utils.preprocess_input import preprocess_input_facenet
-from utils.mtcnn_extractor import *
+from utils.preprocess_input import preprocess_input_image
+from utils.face_extractor import *
 from utils.error_handling import *
+from dotenv import load_dotenv
+
+load_dotenv()
 
 THRESHOLD = 60
 
 
-def classify_face(face, model, isAdv=False, exit=True):
+def classify_face(face, model, required_size, isAdv=False, exit=True):
+    database_path = os.getenv("DATABASE_PATH")
+
     if isAdv:
         original_face = face
-        _, faces = extract_face(face, exit=exit)
+        _, box = extract_face(face, required_size, exit=exit)
     else:
-        original_face, faces = extract_face(face, exit=exit)
-        if original_face is None or faces is None:
-            return "Unknown", "0.0", faces
+        original_face, box = extract_face(face, required_size, exit=exit)
+        if original_face is None or box is None:
+            return "Unknown", "0.0", box
 
-    original_face = preprocess_input_facenet(original_face)
+    original_face = preprocess_input_image(original_face)
     original_embeddings = model.predict(original_face)
 
-    with open("./databases/database.json", "r") as f:
+    with open(database_path, "r") as f:
         show_info("Classifying face...")
 
         highest_key, highest_result, i = "", 0, 0
@@ -38,4 +44,4 @@ def classify_face(face, model, isAdv=False, exit=True):
                 highest_key = "Unknown"
                 highest_result = "0.0"
                 show_error("NO_MATCH_FOUND", exit=exit)
-        return highest_key, highest_result, faces
+        return highest_key, highest_result, box

@@ -4,16 +4,15 @@ import logging
 
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-warnings.filterwarnings("ignore", category=UserWarning, module="keras")
-warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+warnings.filterwarnings("ignore")
 logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
 import re
 import sys
 import asyncio
+from dotenv import load_dotenv
 from utils.interface import VideoCaptureApp
 from utils.live_client import LiveCameraClient
-from dotenv import load_dotenv
 from keras.models import load_model
 from utils.db_generator import create_json
 from utils.adv_generator import attack_adv
@@ -62,10 +61,10 @@ def check_outputs_folder():
 
 
 def show_help():
-    print("Usage: python3 facegsm.py live/camera/manual/--help")
+    print("Usage: python3 facegsm.py [ static | live | capture | database ] --help")
     print("Options:")
-    print("  manual: Manual input for FGSM attack in FaceGSM.")
-    print("  camera: Camera original and target photos in FaceGSM.")
+    print("  static: Static input for FGSM attack in FaceGSM.")
+    print("  capture: Capture original and target photos in FaceGSM.")
     print(
         "  live: Live camera feature in FaceGSM includes real-time face recognition and attack capabilities."
     )
@@ -83,24 +82,16 @@ def show_help_mode(mode):
         )
         print("  --target: Folder path of the victim's face for executing FGSM attack.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
         sys.exit()
-    elif mode == "camera":
-        print("Usage: python3 facegsm.py camera --host [ip]")
+    elif mode == "capture":
+        print("Usage: python3 facegsm.py capture --host [ip]")
         print("Options:")
-        print(
-            "  --host: Specify the IP address for Droidcam to stream live camera feed."
-        )
+        print("  --host: Specify the IP address for Droidcam to capture the image.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
         sys.exit()
-    elif mode == "manual":
+    elif mode == "static":
         print(
-            "Usage: python3 facegsm.py manual --original [original_image_path] -target [target_image_path]"
+            "Usage: python3 facegsm.py static --original [original_image_path] --target [target_image_path]"
         )
         print("Options:")
         print(
@@ -108,9 +99,6 @@ def show_help_mode(mode):
         )
         print("  --target: Folder path of the victim's face for executing FGSM attack")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
-        print(
-            "  --model: Path to the custom model file to load the trained neural network model."
-        )
         sys.exit()
     elif mode == "database":
         print("Usage: python3 facegsm.py database --dataset [dataset_path]")
@@ -122,16 +110,23 @@ def show_help_mode(mode):
 
 
 def main():
-    model_path = os.getenv("DEFAULT_MODEL_PATH")
+    model_path = os.getenv("MODEL_PATH")
     database_path = os.getenv("DATABASE_PATH")
-    dataset_path, custom_model, isCheckpoint = False, False, False
+    dataset_path, custom_model, isCheckpoint = (
+        False,
+        False,
+        False,
+    )
     original_pic_path, target_pic_path, url_droid_cam = "", "", ""
-    modes = ["live", "camera", "manual", "database", "--help"]
+    modes = ["static", "live", "capture", "database", "--help"]
     ascii_art()
     check_database(database_path)
     check_outputs_folder()
 
     model = load_model(model_path)
+    input_layer = model.layers[0].input
+    output_layer = model.layers[-1].output
+    required_size = model.input_shape[1:3]  # input shape size
 
     try:
         mode = sys.argv[1].lower()
@@ -140,7 +135,7 @@ def main():
 
     if mode == "--help":
         show_help()
-    elif mode == "manual":
+    elif mode == "static":
         required_arg = ["--original", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -159,19 +154,11 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
                     isCheckpoint = True
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    model = load_model(model_path)
         elif "--help" in sys.argv:
-            show_help_mode("manual")
+            show_help_mode("static")
         else:
-            show_error("MANUAL_MODE_NEED_ARG")
-    elif mode == "camera":
+            show_error("STATIC_MODE_NEED_ARG")
+    elif mode == "capture":
         required_arg = ["--host"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
@@ -184,18 +171,10 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
                     isCheckpoint = True
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    model = load_model(model_path)
         elif "--help" in sys.argv:
-            show_help_mode("camera")
+            show_help_mode("capture")
         else:
-            show_error("CAMERA_MODE_NEED_ARG")
+            show_error("CAPTURE_MODE_NEED_ARG")
     elif mode == "live":
         required_arg = ["--host", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
@@ -215,14 +194,6 @@ def main():
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
                     isCheckpoint = True
-                elif arg == "--model":
-                    i = sys.argv.index("--model")
-                    try:
-                        model_path = check_argv_file(sys.argv[i + 1])
-                    except:
-                        show_error_arg("NO_VALUE_PROVIDED", arg)
-                    custom_model = True
-                    model = load_model(model_path)
         elif sys.argv[2] == "--help":
             show_help_mode("live")
         else:
@@ -251,19 +222,19 @@ def main():
     else:
         show_info("Using Default Model...")
 
-    # only accept facenet model with input shape 160x160
-    if model.input_shape[1:3] != (160, 160):
-        show_error("MODEL_INVALID")
-
     if mode == "live":
-        handler = LiveCameraClient(target_pic_path, url_droid_cam, model_path)
+        handler = LiveCameraClient(
+            target_pic_path, url_droid_cam, model_path, required_size
+        )
         asyncio.run(handler.initialize())
-    elif mode == "camera":
-        VideoCaptureApp(url_droid_cam, model, isCheckpoint)
-    elif mode == "manual":
-        attack_adv(original_pic_path, target_pic_path, model, isCheckpoint)
+    elif mode == "capture":
+        VideoCaptureApp(url_droid_cam, model, isCheckpoint, required_size)
+    elif mode == "static":
+        attack_adv(
+            original_pic_path, target_pic_path, model, required_size, isCheckpoint
+        )
     elif mode == "database":
-        create_json(dataset_path, model)
+        create_json(dataset_path, model, required_size)
 
 
 if __name__ == "__main__":

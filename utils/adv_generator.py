@@ -9,8 +9,8 @@ import signal
 from functools import partial
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.db_classifier import classify_face
-from utils.preprocess_input import preprocess_input_facenet
-from utils.mtcnn_extractor import *
+from utils.preprocess_input import preprocess_input_image
+from utils.face_extractor import *
 from utils.process_image import *
 from utils.checkpoint_delta import *
 
@@ -23,9 +23,11 @@ TARGET_LOSS = -0.95
 optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=LR)
 loss_function = tf.keras.losses.CosineSimilarity()
 
+
 def clip_eps(tensor, eps):
     # clip the values of the tensor to a given range
     return tf.clip_by_value(tensor, clip_value_min=-eps, clip_value_max=eps)
+
 
 def adv(model, base_image, delta, target_embeddings, step=0):
     show_info("Starting Adversarial Attack...")
@@ -34,7 +36,7 @@ def adv(model, base_image, delta, target_embeddings, step=0):
     while True:
         with tf.GradientTape() as tape:
             tape.watch(delta)
-            adversary = preprocess_input_facenet(base_image + delta)
+            adversary = preprocess_input_image(base_image + delta)
             predictions = model(adversary)
             # model give tf.tensor, model.predict give 2d array
             target_loss = loss_function(target_embeddings, predictions)
@@ -51,27 +53,36 @@ def adv(model, base_image, delta, target_embeddings, step=0):
         delta.assign_add(clip_eps(delta, eps=EPS))
     return delta
 
-def process_initial_input_image(path, role):
-    face, _ = extract_face(path)
+
+def process_initial_input_image(path, role, required_size):
+    face, _ = extract_face(path, required_size)
     show_image(face, f"{role} Image")
     constant = tf.constant(face, dtype=tf.float32)
-    face = preprocess_input_facenet(face)
+    face = preprocess_input_image(face)
     show_image(face, f"Preprocessed {role} Image")
     return face, constant
 
-def process_initial_input_image_live(initial_input):
-    face, _ = extract_face(initial_input, exit=False)
+
+def process_initial_input_image_live(initial_input, required_size):
+    face, _ = extract_face(initial_input, required_size, exit=False)
     if face is None:
         return None, None
     constant = tf.constant(face, dtype=tf.float32)
-    face = preprocess_input_facenet(face)
+    face = preprocess_input_image(face)
     return face, constant
 
-def attack_adv(original_path, target_path, model, isCheckpoint=False):
+
+def attack_adv(
+    original_path,
+    target_path,
+    model,
+    required_size,
+    isCheckpoint=False,
+):
     original_face, original_constant = process_initial_input_image(
-        original_path, "Original"
+        original_path, "Original", required_size
     )
-    target_face, _ = process_initial_input_image(target_path, "Target")
+    target_face, _ = process_initial_input_image(target_path, "Target", required_size)
     target_embeddings = model.predict(target_face)
 
     delta = tf.Variable(
@@ -94,22 +105,21 @@ def attack_adv(original_path, target_path, model, isCheckpoint=False):
     show_image(adv_image, "Adversarial Image")
     save_image(cv2.cvtColor(adv_image, cv2.COLOR_BGR2RGB), "adversarial_img")
 
-    prediction_name, prediction_level, faces = classify_face(
-        adv_image, model, isAdv=True
+    prediction_name, prediction_level, box = classify_face(
+        adv_image, model, required_size, isAdv=True
     )
 
-    adv_image = create_padding(adv_image, faces)
-    _, faces = extract_face(adv_image)  # take faces for rect_gen
+    _, box = extract_face(adv_image, required_size)  # take faces for rect_gen
     adv_image = cv2.cvtColor(adv_image, cv2.COLOR_RGB2BGR)
     rect_gen(
         prediction_name,
         prediction_level,
         adv_image,
-        faces,
+        box,
         "adversarial_rect",
     )
 
-    adv_image_preprocessed = preprocess_input_facenet(
+    adv_image_preprocessed = preprocess_input_image(
         original_constant + perturbation_layer
     )
     show_image(adv_image_preprocessed, "Preprocessed Adversarial Image")
@@ -122,16 +132,27 @@ def attack_adv(original_path, target_path, model, isCheckpoint=False):
     cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
     # cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
-    print(f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%")
+    print(
+        f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%"
+    )
 
     return adv_image
 
-def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
-    original_face, original_constant = process_initial_input_image_live(original_input)
+
+def attack_adv_live(
+    original_input,
+    target_path,
+    model,
+    required_size,
+    isCheckpoint=True,
+):
+    original_face, original_constant = process_initial_input_image_live(
+        original_input, required_size
+    )
 
     if original_face is None:
         return "Unknown", "0.0"
-    target_face, _ = process_initial_input_image_live(target_path)
+    target_face, _ = process_initial_input_image_live(target_path, required_size)
     target_embeddings = model.predict(target_face)
 
     delta = tf.Variable(
@@ -152,24 +173,24 @@ def attack_adv_live(original_input, target_path, model, isCheckpoint=True):
 
     adv_image = (original_constant + perturbation_layer).numpy().squeeze()
     adv_image = np.clip(adv_image, 0, 255).astype("uint8")
-    save_image(adv_image, "adversarial_img_live")
+    save_image(cv2.cvtColor(adv_image, cv2.COLOR_BGR2RGB), "adversarial_img_live")
 
-    prediction_name, prediction_level, faces = classify_face(
-        adv_image, model, isAdv=True, exit=False
+    prediction_name, prediction_level, box = classify_face(
+        adv_image, model, required_size, isAdv=True, exit=False
     )
 
-    adv_image_preprocessed = preprocess_input_facenet(
+    adv_image_preprocessed = preprocess_input_image(
         original_constant + perturbation_layer
     )
 
     original_embeddings = model.predict(original_face)
-    adversarial_embeddings = model.predict(adv_image_preprocessed)
 
     show_info("Attack Finished...")
     cos_sim = cosine_similarity(original_embeddings, target_embeddings)[0][0]
     cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
-    # cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
-    print(f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%")
+    print(
+        f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%"
+    )
 
     return prediction_name, prediction_level
