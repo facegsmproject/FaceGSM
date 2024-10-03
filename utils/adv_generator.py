@@ -131,9 +131,10 @@ def attack_adv(
     cos_sim = cosine_similarity(original_embeddings, target_embeddings)[0][0]
     cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
-    # cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
+    cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
+    cos_sim = round(cos_sim * 100, 5)
     print(
-        f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%"
+        f"[+] Cosine Similarity between target and adversarial embeddings:{cos_sim}%"
     )
 
     return adv_image
