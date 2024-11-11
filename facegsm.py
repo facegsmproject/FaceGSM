@@ -123,11 +123,6 @@ def main():
     check_database(database_path)
     check_outputs_folder()
 
-    model = load_model(model_path)
-    input_layer = model.layers[0].input
-    output_layer = model.layers[-1].output
-    required_size = model.input_shape[1:3]  # input shape size
-
     try:
         mode = sys.argv[1].lower()
     except:
@@ -216,6 +211,11 @@ def main():
     else:
         show_error("MODE_INVALID")
         sys.exit()
+
+    model = load_model(model_path)
+    input_layer = model.layers[0].input
+    output_layer = model.layers[-1].output
+    required_size = model.input_shape[1:3]  # input shape size
 
     if custom_model:
         show_info("Using Custom Model...")
