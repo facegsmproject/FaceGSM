@@ -12,7 +12,7 @@ load_dotenv()
 
 
 class VideoCaptureApp:
-    def __init__(self, URL_DROIDCAM, model, isCheckpoint, required_size):
+    def __init__(self, target_path, URL_DROIDCAM, model, isCheckpoint, required_size):
         self.window = tk.Tk()
         self.window.title("FaceGSM")
         self.video_source = URL_DROIDCAM
@@ -33,22 +33,17 @@ class VideoCaptureApp:
             self.window,
             text="Capture Original",
             width=50,
-            command=self.process_original,
+            command=self.process_frame_original,
         )
         self.btn_process_original.pack(anchor=tk.CENTER, expand=True)
-
-        self.btn_process_target = tk.Button(
-            self.window, text="Capture Target", width=50, command=self.process_target
-        )
-        self.btn_process_target.pack(anchor=tk.CENTER, expand=True)
 
         self.btn_attack = tk.Button(
             self.window, text="Attack", width=50, command=self.attack
         )
         self.btn_attack.pack(anchor=tk.CENTER, expand=True)
 
-        self.window.bind("o", self.process_original)
-        self.window.bind("t", self.process_target)
+        self.window.bind("o", self.process_frame_original)
+        self.process_frame_target(target_path)
         self.window.bind("a", self.attack)
         self.window.bind("q", lambda e: self.on_closing())
 
@@ -66,8 +61,8 @@ class VideoCaptureApp:
             self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
         self.update_id = self.window.after(10, self.update)
 
-    def process_frame(self, role):
-        exit_program = False if role == "original" else True
+    def process_frame_original(self, keybind=None):
+        role = "original"
         ret, frame = self.vid.read()
         if ret:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -75,19 +70,24 @@ class VideoCaptureApp:
                 frame_rgb,
                 self.model,
                 self.required_size,
-                exit=exit_program,
+                exit=False,
             )
             save_image(frame, role)
             role_rect = role + "_rect"
             rect_gen(person_name, confidence_level, frame, box, role_rect)
 
-    def process_original(self, keybind=None):
-        show_info("Capturing Original Image...")
-        self.process_frame("original")
-
-    def process_target(self, keybind=None):
-        show_info("Capturing Target Image...")
-        self.process_frame("target")
+    def process_frame_target(self, target_path):
+        role = "target"
+        frame = cv2.imread(target_path)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        person_name, confidence_level, box = classify_face(
+            frame_rgb,
+            self.model,
+            self.required_size
+        )
+        save_image(frame, role)
+        role_rect = role + "_rect"
+        rect_gen(person_name, confidence_level, frame, box, role_rect)
 
     def attack(self, keybind=None):
         show_info("Attacking Original to Target...")
