@@ -36,7 +36,6 @@ class VideoCaptureApp:
             command=self.process_frame_original,
         )
         self.btn_process_original.pack(anchor=tk.CENTER, expand=True)
-
         self.btn_attack = tk.Button(
             self.window, text="Attack", width=50, command=self.attack
         )

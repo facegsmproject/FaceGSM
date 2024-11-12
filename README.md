@@ -66,6 +66,7 @@
 
 # [🔑] Key Features
 
+
 ✅ Fully compatible with **multiple facial recognition embedding model** including [FaceNet](https://github.com/davidsandberg/facenet), [ArcFace](https://insightface.ai/arcface), [GhostFaceNet](https://github.com/HamadYA/GhostFaceNets), [DeepID](https://github.com/Ruoyiran/DeepID), and [VGGFace2](https://github.com/bariarviv/VGGFace2)<br>
 ✅ Supports **multiple input media**, including static image, captured image and live video feed<br>
 ✅ Saved generated adversarial image as **checkpoints** to increase efficiency for future attacks<br>
