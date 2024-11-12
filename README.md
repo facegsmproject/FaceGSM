@@ -74,6 +74,13 @@
 
 # [⚙️] Installation
 
+## Clone the Repository
+
+```bash
+# Clone the FaceGSM repository
+$ git clone https://github.com/facegsmproject/FaceGSM
+```
+
 ## Conda Environment
 
 Install Conda from [here](https://docs.anaconda.com/miniconda/miniconda-install/). After installing Conda, Run the following commands :
@@ -84,13 +91,6 @@ $ conda env create --name facegsm --file facegsm.yml
 
 # Activate the FaceGSM environment
 $ conda activate facegsm
-```
-
-## Clone the Repository
-
-```bash
-# Clone the FaceGSM repository
-$ git clone https://github.com/facegsmproject/FaceGSM
 ```
 
 For more detail about the installation, please refer to our [Installation Guide](https://facegsm.gitbook.io/facegsm-documentation/facegsm/installation)
