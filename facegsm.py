@@ -80,13 +80,14 @@ def show_help_mode(mode):
         print(
             "  --host: Specify the IP address for Droidcam to stream live camera feed."
         )
-        print("  --target: Folder path of the victim's face for executing FGSM attack.")
+        print("  --target: File path of the victim's face for executing FGSM attack.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
         sys.exit()
     elif mode == "capture":
         print("Usage: python3 facegsm.py capture --host [ip]")
         print("Options:")
         print("  --host: Specify the IP address for Droidcam to capture the image.")
+        print("  --target: File path of the victim's face for executing FGSM attack.")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
         sys.exit()
     elif mode == "static":
@@ -95,9 +96,9 @@ def show_help_mode(mode):
         )
         print("Options:")
         print(
-            "  --original: Folder path of the original's face for executing FGSM attack"
+            "  --original: File path of the original's face for executing FGSM attack"
         )
-        print("  --target: Folder path of the victim's face for executing FGSM attack")
+        print("  --target: File path of the victim's face for executing FGSM attack")
         print("  --checkpoint: Use the saved checkpoint in checkpoints folder")
         sys.exit()
     elif mode == "database":
@@ -122,11 +123,6 @@ def main():
     ascii_art()
     check_database(database_path)
     check_outputs_folder()
-
-    model = load_model(model_path)
-    input_layer = model.layers[0].input
-    output_layer = model.layers[-1].output
-    required_size = model.input_shape[1:3]  # input shape size
 
     try:
         mode = sys.argv[1].lower()
@@ -159,7 +155,7 @@ def main():
         else:
             show_error("STATIC_MODE_NEED_ARG")
     elif mode == "capture":
-        required_arg = ["--host"]
+        required_arg = ["--host", "--target"]
         has_all_required = all(arg in sys.argv for arg in required_arg)
         if has_all_required:
             for arg in sys.argv:
@@ -167,6 +163,12 @@ def main():
                     i = sys.argv.index("--host")
                     try:
                         url_droid_cam = check_argv_url_droidcam(sys.argv[i + 1])
+                    except:
+                        show_error_arg("NO_VALUE_PROVIDED", arg)
+                elif arg == "--target":
+                    i = sys.argv.index("--target")
+                    try:
+                        target_pic_path = check_argv_file(sys.argv[i + 1])
                     except:
                         show_error_arg("NO_VALUE_PROVIDED", arg)
                 elif arg == "--checkpoint":
@@ -217,6 +219,11 @@ def main():
         show_error("MODE_INVALID")
         sys.exit()
 
+    model = load_model(model_path)
+    input_layer = model.layers[0].input
+    output_layer = model.layers[-1].output
+    required_size = model.input_shape[1:3]  # input shape size
+
     if custom_model:
         show_info("Using Custom Model...")
     else:
@@ -228,7 +235,7 @@ def main():
         )
         asyncio.run(handler.initialize())
     elif mode == "capture":
-        VideoCaptureApp(url_droid_cam, model, isCheckpoint, required_size)
+        VideoCaptureApp(target_pic_path, url_droid_cam, model, isCheckpoint, required_size)
     elif mode == "static":
         attack_adv(
             original_pic_path, target_pic_path, model, required_size, isCheckpoint

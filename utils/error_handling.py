@@ -22,7 +22,7 @@ error_list = {
     "ERROR_SHOWING_IMAGE": "Error in showing image",
     "ERROR_CREATING_PADDING": "Error in creating padding",
     "STATIC_MODE_NEED_ARG": "Static Mode need arguments. Usage: python3 facegsm.py static --original [original_pic_path] --target [target_pic_path]",
-    "CAPTURE_MODE_NEED_ARG": "Capture Mode need arguments. Usage: python3 facegsm.py capture --host [droid_cam_url]",
+    "CAPTURE_MODE_NEED_ARG": "Capture Mode need arguments. Usage: python3 facegsm.py capture --target [target_pic_path] --host [droid_cam_url]",
     "LIVE_MODE_NEED_ARG": "Live Mode need arguments. Usage: python3 facegsm.py live --host [droid_cam_url] --target [target_pic_path]",
     "CLIENT_DISCONNECTED": "Client disconnected",
 }
