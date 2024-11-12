@@ -66,7 +66,7 @@
 
 # [🔑] Key Features
 
-✅ Fully compatible with **multiple facial recognition embedding model** including [FaceNet](https://github.com/davidsandberg/facenet) and [ArcFace](https://insightface.ai/arcface)<br>
+✅ Fully compatible with **multiple facial recognition embedding model** including [FaceNet](https://github.com/davidsandberg/facenet), [ArcFace](https://insightface.ai/arcface), [GhostFaceNet](https://github.com/HamadYA/GhostFaceNets), [DeepID](https://github.com/Ruoyiran/DeepID), and [VGGFace2](https://github.com/bariarviv/VGGFace2)<br>
 ✅ Supports **multiple input media**, including static image, captured image and live video feed<br>
 ✅ Saved generated adversarial image as **checkpoints** to increase efficiency for future attacks<br>
 ✅ Works with your own **Custom Face Datasets**<br>
@@ -79,11 +79,8 @@
 Install Conda from [here](https://docs.anaconda.com/miniconda/miniconda-install/). After installing Conda, Run the following commands :
 
 ```bash
-# Install anaconda-client if you don't already have it
-$ conda install anaconda-client
-
-# Create the environment for FaceGSM
-$ conda env create facegsmproject/facegsm
+# Create the environment for FaceGSM using the provided facegsm.yml file
+$ conda env create --name facegsm --file facegsm.yml
 
 # Activate the FaceGSM environment
 $ conda activate facegsm
