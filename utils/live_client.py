@@ -23,7 +23,6 @@ class LiveCameraClient:
         self.required_size = required_size
         self.target_path = target_path
         self.isAttack = False
-        self.isFirstAttack = True
 
     async def initialize(self):
 

@@ -113,8 +113,7 @@ def show_help_mode(mode):
 def main():
     model_path = os.getenv("MODEL_PATH")
     database_path = os.getenv("DATABASE_PATH")
-    dataset_path, custom_model, isCheckpoint = (
-        False,
+    dataset_path, isCheckpoint = (
         False,
         False,
     )
@@ -224,18 +223,31 @@ def main():
     output_layer = model.layers[-1].output
     required_size = model.input_shape[1:3]  # input shape size
 
-    if custom_model:
-        show_info("Using Custom Model...")
-    else:
-        show_info("Using Default Model...")
+    model_name = model_path.split("/")[-1]
+    show_info(f"Using {model_name} model")
 
     if mode == "live":
+        if os.path.isdir("./checkpoints") and len(os.listdir("./checkpoints")) != 0:
+            show_info(
+                "Checkpoint found. Do you want to use it or delete it? [y (use) / n (delete)]"
+            )
+            answer = input("Answer: ").lower()
+            if answer == "n":
+                for file in os.listdir("./checkpoints"):
+                    os.remove(f"./checkpoints/{file}")
+                show_info("Checkpoint deleted.")
+            elif answer == "y":
+                pass
+            else:
+                show_error("INVALID_CHECKPOINT_ANSWER")
         handler = LiveCameraClient(
             target_pic_path, url_droid_cam, model_path, required_size
         )
         asyncio.run(handler.initialize())
     elif mode == "capture":
-        VideoCaptureApp(target_pic_path, url_droid_cam, model, isCheckpoint, required_size)
+        VideoCaptureApp(
+            target_pic_path, url_droid_cam, model, isCheckpoint, required_size
+        )
     elif mode == "static":
         attack_adv(
             original_pic_path, target_pic_path, model, required_size, isCheckpoint

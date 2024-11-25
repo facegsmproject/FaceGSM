@@ -5,3 +5,4 @@ outputs/*
 databases/*_*
 test-*
 test_*
+custom_*

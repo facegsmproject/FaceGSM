@@ -145,7 +145,6 @@ def attack_adv_live(
     target_path,
     model,
     required_size,
-    isCheckpoint=True,
 ):
     original_face, original_constant = process_initial_input_image_live(
         original_input, required_size
