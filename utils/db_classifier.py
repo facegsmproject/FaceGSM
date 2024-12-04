@@ -16,7 +16,7 @@ def classify_face(face, model, required_size, isAdv=False, exit=True):
 
     if isAdv:
         original_face = face
-        _, box = extract_face(face, required_size, exit=exit)
+        box = None
     else:
         original_face, box = extract_face(face, required_size, exit=exit)
         if original_face is None or box is None:

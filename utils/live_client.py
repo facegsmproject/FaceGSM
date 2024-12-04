@@ -30,7 +30,7 @@ class LiveCameraClient:
         self.prediction_result = asyncio.Queue()
 
         live_feed_task = asyncio.create_task(self.update_frame(self.prediction_result))
-        server_task = asyncio.create_task(self.process_frame_to_be_sent(self.frame))
+        server_task = asyncio.create_task(self.process_frame_to_be_sent())
         key_task = asyncio.create_task(self.check_a_key())
 
         await asyncio.gather(live_feed_task, server_task, key_task)
@@ -38,7 +38,7 @@ class LiveCameraClient:
         self.writer.close()
         await self.writer.wait_closed()
 
-    async def process_frame_to_be_sent(self, frame):
+    async def process_frame_to_be_sent(self):
         while True:
             frame_bytes = self.frame.tobytes()
             frame_size = len(frame_bytes)
