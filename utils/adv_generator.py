@@ -105,18 +105,8 @@ def attack_adv(
     show_image(adv_image, "Adversarial Image")
     save_image(cv2.cvtColor(adv_image, cv2.COLOR_BGR2RGB), "adversarial_img")
 
-    prediction_name, prediction_level, box = classify_face(
+    prediction_name, prediction_level, _ = classify_face(
         adv_image, model, required_size, isAdv=True
-    )
-
-    _, box = extract_face(adv_image, required_size)  # take faces for rect_gen
-    adv_image = cv2.cvtColor(adv_image, cv2.COLOR_RGB2BGR)
-    rect_gen(
-        prediction_name,
-        prediction_level,
-        adv_image,
-        box,
-        "adversarial_rect",
     )
 
     adv_image_preprocessed = preprocess_input_image(
@@ -124,17 +114,13 @@ def attack_adv(
     )
     show_image(adv_image_preprocessed, "Preprocessed Adversarial Image")
 
-    original_embeddings = model.predict(original_face)
-    adversarial_embeddings = model.predict(adv_image_preprocessed)
-
     show_info("Attack Finished...")
+    original_embeddings = model.predict(original_face)
     cos_sim = cosine_similarity(original_embeddings, target_embeddings)[0][0]
     cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
-    cos_sim = cosine_similarity(adversarial_embeddings, target_embeddings)[0][0]
-    cos_sim = round(cos_sim * 100, 5)
     print(
-        f"[+] Cosine Similarity between target and adversarial embeddings:{cos_sim}%"
+        f"[+] Cosine Similarity between target and adversarial embeddings:{prediction_level}%"
     )
 
     return adv_image
@@ -152,6 +138,7 @@ def attack_adv_live(
 
     if original_face is None:
         return "Unknown", "0.0"
+
     target_face, _ = process_initial_input_image_live(target_path, required_size)
     target_embeddings = model.predict(target_face)
 
@@ -175,7 +162,7 @@ def attack_adv_live(
     adv_image = np.clip(adv_image, 0, 255).astype("uint8")
     save_image(cv2.cvtColor(adv_image, cv2.COLOR_BGR2RGB), "adversarial_img_live")
 
-    prediction_name, prediction_level, box = classify_face(
+    prediction_name, prediction_level, _ = classify_face(
         adv_image, model, required_size, isAdv=True, exit=False
     )
 
@@ -183,9 +170,8 @@ def attack_adv_live(
         original_constant + perturbation_layer
     )
 
-    original_embeddings = model.predict(original_face)
-
     show_info("Attack Finished...")
+    original_embeddings = model.predict(original_face)
     cos_sim = cosine_similarity(original_embeddings, target_embeddings)[0][0]
     cos_sim = round(cos_sim * 100, 5)
     print(f"[+] Cosine Similarity between original and target embeddings:{cos_sim}%")
